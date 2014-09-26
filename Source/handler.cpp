@@ -68,7 +68,7 @@ bool Handler::downloadFirmwares(){
 #ifdef RELEASE
     qDebug() << "here";
     //rename(FWCONFIG_FILENAME, FWCONFIG_FILENAME "_backup.txt");
-    download(FWCONFIG_FILENAME);
+    downloadFile(FWCONFIG_FILENAME);
     /*if(!fileExists(FWCONFIG_FILENAME)){
         rename("info_backup.txt","info.txt");
         return false;
@@ -79,8 +79,8 @@ bool Handler::downloadFirmwares(){
     for(unsigned int i = 1; i < firmwareList.size(); i++){
         for(int j = 0; j < firmwareCount[i]; j++){
             string fileName = deviceList[i] + "/firmware" + firmwareList[i][j] + ".hex";
-            if(downloadFile("Firmware/" + fileName)==false ||
-               !fileExists(("Firmware/" + fileName))){
+            if(downloadFile("Firmwares/" + fileName)==false ||
+               !fileExists(("Firmwares/" + fileName))){
                 success = false;
             }
         }
@@ -130,7 +130,7 @@ int Handler::uploadFirmware(int firmwareIndex){
         return 2;
     }
     string flash = " -q -F -U flash:w:";
-    string file = "./Firmware/" + deviceList[curr_device] + "/firmware" + firmwareList[curr_device][firmwareIndex] + ".hex";
+    string file = "./Firmwares/" + deviceList[curr_device] + "/firmware" + firmwareList[curr_device][firmwareIndex] + ".hex";
     QProcess p;
     p.start((command + options + flash + file).c_str());
     bool finished = false;

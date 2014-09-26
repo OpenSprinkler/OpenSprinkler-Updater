@@ -60,6 +60,8 @@ void MainWindow::on_btnDownload_clicked()
     } else {
         ui->outputBox->append("Success!");
     }
+    populateDevices();
+    populateFirmwares(ui->cmbDevice->currentIndex());
     this->setEnabled(true);
     QApplication::restoreOverrideCursor();
 }

@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-//#define RELEASE //define for release
+#define RELEASE //define for release
 
 // Device defines
 #define NO_DEVICE   0
@@ -20,7 +20,7 @@
 #define FWCONFIG_FILENAME "config.txt"
 #define LOG_FILENAME      "log.txt"
 //GitHub repository link
-#define GITHUB "https://raw.githubusercontent.com/rayshobby/opensprinkler/master/OpenSprinkler Controller/software/osFirmwareUpdater/"
+#define GITHUB "https://raw.githubusercontent.com/rayshobby/osFWUpdater/master/"
 
 
 #endif // DEFINES_H
