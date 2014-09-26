@@ -10,13 +10,17 @@ MainWindow::MainWindow(QWidget *parent) :
     myHandler = new Handler(this);
     if(myHandler->findWorkingDir()){
         on_btnHelp_clicked();
+        if(!myHandler->loadConfigFile()){
+            ui->outputBox->setText("Failed to load " FWCONFIG_FILENAME);
+            return;
+        }
         populateMenus();
     } else {
         ui->outputBox->setText("Error: missing " FWCONFIG_FILENAME);
         this->setEnabled(false);
     }
     this->setWindowIcon(QIcon("icon.png"));
-
+    isPopulating = false;
 }
 
 MainWindow::~MainWindow()
@@ -51,19 +55,17 @@ void MainWindow::on_btnDetect_clicked()
 void MainWindow::on_btnDownload_clicked()
 {
     ui->outputBox->setText("Downloading firmware.\nPlease wait...");
-    QApplication::processEvents();
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    //QApplication::setOverrideCursor(Qt::WaitCursor);
     this->setEnabled(false);
-    QApplication::processEvents();
     if(!myHandler->downloadFirmwares()){
         ui->outputBox->append("Error. Check log.txt for details.");
     } else {
         ui->outputBox->append("Success!");
     }
-    populateDevices();
-    populateFirmwares(ui->cmbDevice->currentIndex());
+
+    populateMenus();
     this->setEnabled(true);
-    QApplication::restoreOverrideCursor();
+    //QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::on_btnUpload_clicked()
@@ -100,23 +102,27 @@ void MainWindow::on_btnHelp_clicked()
 
 void MainWindow::populateMenus()
 {
-    if(!myHandler->loadConfigFile()){
-        ui->outputBox->setText("Failed to load " FWCONFIG_FILENAME);
-        return;
-    }
     populateDevices();
-    populateFirmwares(ui->cmbDevice->currentIndex());
+    //populateFirmwares(ui->cmbDevice->currentIndex());
 }
 
 void MainWindow::populateDevices()
 {
+    qDebug()<<"1";
+    isPopulating = true;
     ui->cmbDevice->clear();
-
+    qDebug()<<"2";
     QStringList list;
     for(unsigned int i = 0; i < myHandler->deviceList.size(); i++){
         list.append(myHandler->deviceList[i].c_str());
     }
+       qDebug()<<"3";
     ui->cmbDevice->addItems(list);
+        qDebug()<<"4";
+    ui->cmbDevice->setCurrentIndex(0);
+    isPopulating = false;
+    on_cmbDevice_currentIndexChanged(0);
+        qDebug()<<"5";
 
 }
 
@@ -132,6 +138,10 @@ void MainWindow::populateFirmwares(int index)
 
 void MainWindow::on_cmbDevice_currentIndexChanged(int index)
 {
-    myHandler->curr_device = index;
-    populateFirmwares(index);
+    if (!isPopulating) {
+        myHandler->curr_device = index;
+        qDebug()<<"6";
+        populateFirmwares(index);
+        qDebug()<<"7";
+    }
 }

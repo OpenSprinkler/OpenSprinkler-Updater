@@ -39,7 +39,7 @@ private:
 
     void populateFirmwares(int index);
 
-
+    bool isPopulating;
 };
 
 #endif // MAINWINDOW_H

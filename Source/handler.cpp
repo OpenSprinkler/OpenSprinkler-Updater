@@ -14,7 +14,7 @@ Handler::Handler(QObject* parent):
 
 Handler::~Handler()
 {
-    clearLists();
+    //clearLists();
 }
 
 // Find the correct working directory
@@ -37,12 +37,12 @@ bool Handler::findWorkingDir()
 // and create UI lists
 bool Handler::loadConfigFile()
 {
-    clearLists();
     QFile configFile(FWCONFIG_FILENAME);
     configFile.open(QIODevice::ReadOnly);
     if(!configFile.isOpen()){
         return false;
     }
+    clearLists();
     int count = 0;
     QTextStream configStream(&configFile);
     while(!configStream.atEnd()){
@@ -60,6 +60,7 @@ bool Handler::loadConfigFile()
         firmwareList.push_back(newStringArray);
         configStream.readLine();
     }
+    configFile.close();
     return true;
 }
 
@@ -166,9 +167,9 @@ void Handler::clearLists()
     deviceList.clear();
     commandList.clear();
     firmwareCount.clear();
-    for(unsigned int i = 0; i < firmwareList.size(); i++){
+    /*for(unsigned int i = 0; i < firmwareList.size(); i++){
         delete[] firmwareList[i];
-    }
+    }*/
     firmwareList.clear();
 }
 
