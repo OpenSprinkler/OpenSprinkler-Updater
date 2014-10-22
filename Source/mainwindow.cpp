@@ -35,16 +35,17 @@ void MainWindow::on_btnDetect_clicked()
     if(!myHandler->detectDevice()){
         ui->cmbDevice->setCurrentIndex(0);
         ui->outputBox->append("Failed.\n");
-        ui->outputBox->append("For OpenSprinkler v2.1, make sure the device is in bootloading mode (click Help below).\n");
-        ui->outputBox->append("If you know your device version, you can also select manually from the Device dropdown list.");
+        ui->outputBox->append("Make sure you've installed the necessary driver.\n");
+        ui->outputBox->append("For OpenSprinkler Hardware v2.1, make sure the device is in bootloader mode.\n");
+        ui->outputBox->append("Check Instructions.pdf for additional details.");
     } else {
         QString dname= myHandler->deviceList[myHandler->curr_device].c_str();
         ui->outputBox->append("Found " + dname + "!\n");
 
         if (dname.endsWith("2.1")) {
-            ui->outputBox->append("Please re-enter bootloader and then click on 'Upload Firmware'.");
+            ui->outputBox->append("Please re-enter bootloader and then click on 'Upload Selected Firmware'.");
         } else {
-            ui->outputBox->append("Next, click on 'Upload Firmware'.");
+            ui->outputBox->append("Next, click on 'Upload Selected Firmware'.");
         }
         ui->cmbDevice->setCurrentIndex(myHandler->curr_device);
         ui->cmbDevice->currentIndexChanged(myHandler->curr_device);
@@ -81,6 +82,17 @@ void MainWindow::on_btnUpload_clicked()
     int ret = myHandler->uploadFirmware(ui->cmbFirmware->currentIndex());
     if(ret){
         ui->outputBox->append("Failed.\n");
+        switch(ret) {
+        case ERROR_COMMAND:
+            ui->outputBox->append("avrdude command error.\n");
+            break;
+        case ERROR_NO_DEVICE:
+            ui->outputBox->append("No device is selected.\n");
+            break;
+        case ERROR_UPLOADING:
+            ui->outputBox->append("Device not found.\n");
+            break;
+        }
         ui->outputBox->append("Check log.txt for details");
     } else {
         ui->outputBox->append("Success!");
@@ -91,13 +103,11 @@ void MainWindow::on_btnUpload_clicked()
 
 void MainWindow::on_btnHelp_clicked()
 {
-    ui->outputBox->setText("1. Click 'Download Firmware'.\n");
-
-    ui->outputBox->append("2. For OpenSprinkler 2.1, enter bootloader -> "
-                           "press and hold button B2 while plugging in the USB cable, then release the "
-                           "button within 1-2 seconds.\n");
-    ui->outputBox->append("For all other versions: just plug in the USB cable.\n");
-    ui->outputBox->append("3. Click 'Detect Device'.");
+    ui->outputBox->setText("0. Read Instructions.pdf.\n");
+    ui->outputBox->append("1. Click 'Download Firmware'.\n");
+    ui->outputBox->append("2. For OpenSprinkler Hardware v2.1, please enter bootloader first: details are in Instructions.pdf.\n");
+    ui->outputBox->append("For all other hardware versions: just plug in the USB cable.\n");
+    ui->outputBox->append("3. Click 'Detect Hardware'.");
 }
 
 void MainWindow::populateMenus()
@@ -108,22 +118,16 @@ void MainWindow::populateMenus()
 
 void MainWindow::populateDevices()
 {
-    qDebug()<<"1";
     isPopulating = true;
     ui->cmbDevice->clear();
-    qDebug()<<"2";
     QStringList list;
     for(unsigned int i = 0; i < myHandler->deviceList.size(); i++){
         list.append(myHandler->deviceList[i].c_str());
     }
-       qDebug()<<"3";
     ui->cmbDevice->addItems(list);
-        qDebug()<<"4";
     ui->cmbDevice->setCurrentIndex(0);
     isPopulating = false;
     on_cmbDevice_currentIndexChanged(0);
-        qDebug()<<"5";
-
 }
 
 void MainWindow::populateFirmwares(int index)
@@ -140,8 +144,6 @@ void MainWindow::on_cmbDevice_currentIndexChanged(int index)
 {
     if (!isPopulating) {
         myHandler->curr_device = index;
-        qDebug()<<"6";
         populateFirmwares(index);
-        qDebug()<<"7";
     }
 }

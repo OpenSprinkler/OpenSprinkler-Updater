@@ -16,6 +16,11 @@
 #define MACOS       2
 #define WINDOWS     3
 
+// Upload error defines
+#define ERROR_COMMAND   1
+#define ERROR_NO_DEVICE 2
+#define ERROR_UPLOADING 3
+
 // File names
 #define FWCONFIG_FILENAME "config.txt"
 #define LOG_FILENAME      "log.txt"

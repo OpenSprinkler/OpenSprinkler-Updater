@@ -23,7 +23,7 @@ bool Handler::findWorkingDir()
     QDir tmp(QCoreApplication::applicationDirPath());
     // go up the chain until we find the config file
     while(!fileExists(FWCONFIG_FILENAME)){
-        qDebug() << tmp.path();
+        //qDebug() << tmp.path();
         if(tmp.path() == "/"){
             break;
         }
@@ -67,7 +67,7 @@ bool Handler::loadConfigFile()
 // Download all firmwares
 bool Handler::downloadFirmwares(){
 #ifdef RELEASE
-    qDebug() << "here";
+    //qDebug() << "here";
     //rename(FWCONFIG_FILENAME, FWCONFIG_FILENAME "_backup.txt");
     downloadFile(FWCONFIG_FILENAME);
     /*if(!fileExists(FWCONFIG_FILENAME)){
@@ -123,12 +123,12 @@ int Handler::uploadFirmware(int firmwareIndex){
     string command = getCommand();
     if(command.empty()) {
         writeLog("Command is empty.");
-        return 1;
+        return ERROR_COMMAND;
     }
     string options = commandList[curr_device];
     if(curr_device == NO_DEVICE) {
         writeLog("No device is selected.");
-        return 2;
+        return ERROR_NO_DEVICE;
     }
     string flash = " -q -F -U flash:w:";
     string file = "./Firmwares/" + deviceList[curr_device] + "/firmware" + firmwareList[curr_device][firmwareIndex] + ".hex";
@@ -147,7 +147,7 @@ int Handler::uploadFirmware(int firmwareIndex){
         return 0;
     }
     writeLog("Error uploading firmware.");
-    return 3;
+    return ERROR_UPLOADING;
 }
 
 // Write to log
