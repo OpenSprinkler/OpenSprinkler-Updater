@@ -23,11 +23,11 @@ bool Handler::findWorkingDir()
     QDir tmp(QCoreApplication::applicationDirPath());
     // go up the chain until we find the config file
     while(!fileExists(FWCONFIG_FILENAME)){
-        //qDebug() << tmp.path();
         if(tmp.path() == "/"){
             break;
         }
         tmp.cdUp();
+        qDebug() << tmp.path();
         QDir::setCurrent(tmp.path());
     }
     return fileExists(FWCONFIG_FILENAME);
@@ -102,6 +102,7 @@ bool Handler::detectDevice(){
     for(unsigned int i = 1; i < commandList.size(); i++){
         detectCommand = initCommand + commandList[i];
         QProcess p;
+        qDebug()<<detectCommand.c_str();
         p.start(detectCommand.c_str());
         p.waitForFinished(-1);
         QString output(p.readAllStandardError());
@@ -184,6 +185,7 @@ string Handler::getCommand()
            serialPortInfo.hasProductIdentifier() &&
            serialPortInfo.productIdentifier() == 0x7523) {
            comport = serialPortInfo.portName().toStdString();
+           qDebug()<<comport.c_str();
         }
     }
 
