@@ -1,19 +1,12 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2014-09-11T11:36:52
+# Project created by QtCreator 2015-04-23T00:16:52
 #
 #-------------------------------------------------
 
 QT       += core gui
-QT       += network
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT       += widgets serialport
-} else {
-    include($$QTSERIALPORT_PROJECT_ROOT/src/serialport/qt4support/serialport.prf)
-}
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets serialport network
 
 TARGET = osFWUpdater
 TEMPLATE = app
@@ -24,11 +17,7 @@ SOURCES += main.cpp\
     handler.cpp
 
 HEADERS  += mainwindow.h \
-    defines.h \
-    handler.h
+    handler.h \
+    defines.h
 
 FORMS    += mainwindow.ui
-
-RESOURCES +=
-
-OTHER_FILES +=

@@ -1,5 +1,21 @@
 #include "handler.h"
 
+#include <QDebug>
+#include <QString>
+#include <QProcess>
+#include <QDir>
+#include <QCoreApplication>
+#include <QObject>
+#include <QTextStream>
+
+#include <QEventLoop>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkReply>
+#include <QUrl>
+#include <QByteArray>
+#include <QtSerialPort/QSerialPortInfo>
+
 QT_USE_NAMESPACE
 
 using namespace std;
@@ -50,6 +66,8 @@ bool Handler::loadConfigFile()
         configStream.readLine();
         commandList.push_back(configStream.readLine().toStdString());
         configStream.readLine();
+        signatureList.push_back(configStream.readLine().toStdString());
+        configStream.readLine();
         count = configStream.readLine().toInt();
         firmwareCount.push_back(count);
         string* newStringArray = new string[count];
@@ -67,13 +85,7 @@ bool Handler::loadConfigFile()
 // Download all firmwares
 bool Handler::downloadFirmwares(){
 #ifdef RELEASE
-    //qDebug() << "here";
-    //rename(FWCONFIG_FILENAME, FWCONFIG_FILENAME "_backup.txt");
     downloadFile(FWCONFIG_FILENAME);
-    /*if(!fileExists(FWCONFIG_FILENAME)){
-        rename("info_backup.txt","info.txt");
-        return false;
-    }*/
     loadConfigFile();
 #endif
     bool success = true;
@@ -109,11 +121,10 @@ bool Handler::detectDevice(){
         p.close();
 
         if(output.indexOf("Device signature = ") != -1){
-            if(output.indexOf("0x1e95") != -1){
-                return false;
+            if(output.indexOf(signatureList[i].c_str()) != -1){
+                curr_device = i;
+                return true;
             }
-            curr_device = i;
-            return true;
         }
     }
     return false;
@@ -168,6 +179,7 @@ void Handler::clearLists()
     deviceList.clear();
     commandList.clear();
     firmwareCount.clear();
+    signatureList.clear();
     /*for(unsigned int i = 0; i < firmwareList.size(); i++){
         delete[] firmwareList[i];
     }*/

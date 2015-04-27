@@ -8,21 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <QDebug>
-#include <QString>
-#include <QProcess>
-#include <QDir>
-#include <QCoreApplication>
-#include <QObject>
-#include <QTextStream>
-
-#include <QEventLoop>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkRequest>
-#include <QtNetwork/QNetworkReply>
-#include <QUrl>
-#include <QByteArray>
-#include <QtSerialPort/QSerialPortInfo>
+#include <QApplication>
 
 class Handler : public QObject
 {
@@ -35,6 +21,7 @@ public:
     std::vector<int> firmwareCount;
     std::vector<std::string*> firmwareList;
     std::vector<std::string> commandList;
+    std::vector<std::string> signatureList;
 
     bool findWorkingDir();
     bool loadConfigFile();

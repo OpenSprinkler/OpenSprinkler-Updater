@@ -6,73 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>280</width>
-    <height>500</height>
+    <width>320</width>
+    <height>581</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>280</width>
-    <height>500</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>280</width>
-    <height>500</height>
-   </size>
   </property>
   <property name="windowTitle">
    <string>OpenSprinkler</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
    <widget class="QPushButton" name="btnDownload">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>5</y>
-      <width>260</width>
-      <height>40</height>
+      <y>10</y>
+      <width>301</width>
+      <height>41</height>
      </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>260</width>
-      <height>40</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>260</width>
-      <height>40</height>
-     </size>
     </property>
     <property name="font">
      <font>
-      <family>Arial</family>
-      <pointsize>13</pointsize>
-      <weight>50</weight>
-      <italic>false</italic>
-      <bold>false</bold>
-      <underline>false</underline>
+      <pointsize>12</pointsize>
      </font>
     </property>
     <property name="toolTip">
@@ -80,47 +33,20 @@
     </property>
     <property name="text">
      <string>Download Firmware</string>
-    </property>
-    <property name="shortcut">
-     <string>Meta+F</string>
-    </property>
-    <property name="checkable">
-     <bool>false</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="btnDetect">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>50</y>
-      <width>260</width>
-      <height>40</height>
+      <y>60</y>
+      <width>301</width>
+      <height>41</height>
      </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>260</width>
-      <height>40</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>260</width>
-      <height>40</height>
-     </size>
     </property>
     <property name="font">
      <font>
-      <family>Arial</family>
-      <pointsize>13</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
+      <pointsize>12</pointsize>
      </font>
     </property>
     <property name="toolTip">
@@ -129,53 +55,18 @@
     <property name="text">
      <string>Detect Hardware</string>
     </property>
-    <property name="shortcut">
-     <string>Meta+D</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnHelp">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>460</y>
-      <width>260</width>
-      <height>35</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>260</width>
-      <height>35</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>260</width>
-      <height>35</height>
-     </size>
-    </property>
-    <property name="font">
-     <font>
-      <family>Arial</family>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Help</string>
-    </property>
    </widget>
    <widget class="QLabel" name="lblDevice">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>102</y>
-      <width>81</width>
-      <height>21</height>
+      <x>20</x>
+      <y>120</y>
+      <width>101</width>
+      <height>17</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>Arial</family>
       <pointsize>12</pointsize>
      </font>
     </property>
@@ -183,34 +74,17 @@
      <string>Hardware:</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="cmbDevice">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>100</y>
-      <width>171</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Arial</family>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-   </widget>
    <widget class="QLabel" name="lblFirmware">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>132</y>
+      <x>20</x>
+      <y>160</y>
       <width>81</width>
-      <height>21</height>
+      <height>17</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>Arial</family>
       <pointsize>12</pointsize>
      </font>
     </property>
@@ -218,49 +92,20 @@
      <string>Firmware:</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="cmbFirmware">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>130</y>
-      <width>171</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Arial</family>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
-   </widget>
    <widget class="QPushButton" name="btnUpload">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>165</y>
-      <width>260</width>
-      <height>40</height>
+      <y>200</y>
+      <width>301</width>
+      <height>51</height>
      </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>260</width>
-      <height>40</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>260</width>
-      <height>40</height>
-     </size>
     </property>
     <property name="font">
      <font>
-      <family>Arial</family>
-      <pointsize>13</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
+      <pointsize>12</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="toolTip">
@@ -269,52 +114,69 @@
     <property name="text">
      <string>Upload Selected Firmware</string>
     </property>
-    <property name="shortcut">
-     <string>Meta+U</string>
-    </property>
    </widget>
    <widget class="QTextBrowser" name="outputBox">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>210</y>
-      <width>261</width>
-      <height>241</height>
+      <y>260</y>
+      <width>301</width>
+      <height>261</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnHelp">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>530</y>
+      <width>301</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>Arial</family>
       <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>Help</string>
+    </property>
+    <property name="text">
+     <string>Help</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cmbDevice">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>112</y>
+      <width>201</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="cmbFirmware">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>150</y>
+      <width>201</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
      </font>
     </property>
    </widget>
   </widget>
-  <action name="actionExit">
-   <property name="text">
-    <string>exit</string>
-   </property>
-  </action>
-  <action name="actionUpdate_Firmware">
-   <property name="text">
-    <string>Update Firmware</string>
-   </property>
-  </action>
-  <action name="actionDetect_Device">
-   <property name="text">
-    <string>Detect Device</string>
-   </property>
-  </action>
-  <action name="actionHow_To">
-   <property name="text">
-    <string>How To</string>
-   </property>
-  </action>
-  <action name="actionAbout">
-   <property name="text">
-    <string>About</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
