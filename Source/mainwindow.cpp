@@ -43,7 +43,7 @@ void MainWindow::on_btnDetect_clicked()
         ui->outputBox->append("Found " + dname + "!\n");
 
         if (dname.endsWith("2.1")) {
-            ui->outputBox->append("Please re-enter bootloader and then click on 'Upload Selected Firmware'.");
+            ui->outputBox->append("Please enter bootloader and then click on 'Upload Selected Firmware'.");
         } else {
             ui->outputBox->append("Next, click on 'Upload Selected Firmware'.");
         }
@@ -105,9 +105,8 @@ void MainWindow::on_btnHelp_clicked()
 {
     ui->outputBox->setText("0. Read Instructions.pdf.\n");
     ui->outputBox->append("1. Click 'Download Firmware'.\n");
-    ui->outputBox->append("2. For OpenSprinkler Hardware v2.1, please enter bootloader first: details are in Instructions.pdf.\n");
-    ui->outputBox->append("For all other hardware versions: just plug in the USB cable.\n");
-    ui->outputBox->append("3. Click 'Detect Hardware'.\n");
+    ui->outputBox->append("2. For Hardware v2.1, do NOT click on Detect Hardware. Instead, enter bootloader (read Instructions.pdf), and manually select OpenSprinkler_v2.1 from the list. Then click on Upload Selected Firmware.\n");
+    ui->outputBox->append("3. For other hardware versions: plug in the USB cable and click on Detect Hardware.\n");
     ui->outputBox->append("(Release Date: 04/26/15)");
 }
 
