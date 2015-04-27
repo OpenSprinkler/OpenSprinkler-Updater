@@ -107,7 +107,8 @@ void MainWindow::on_btnHelp_clicked()
     ui->outputBox->append("1. Click 'Download Firmware'.\n");
     ui->outputBox->append("2. For OpenSprinkler Hardware v2.1, please enter bootloader first: details are in Instructions.pdf.\n");
     ui->outputBox->append("For all other hardware versions: just plug in the USB cable.\n");
-    ui->outputBox->append("3. Click 'Detect Hardware'.");
+    ui->outputBox->append("3. Click 'Detect Hardware'.\n");
+    ui->outputBox->append("(Release Date: 04/26/15)");
 }
 
 void MainWindow::populateMenus()
