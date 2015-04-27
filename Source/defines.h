@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-//#define RELEASE //define for release
+#define RELEASE //define for release
 
 // Device defines
 #define NO_DEVICE   0
