@@ -24,7 +24,7 @@
 #define FWCONFIG_FILENAME "config2.txt"
 #define LOG_FILENAME      "log.txt"
 //GitHub repository link
-#define GITHUB "https://raw.githubusercontent.com/rayshobby/osFWUpdater/master/"
+#define GITHUB "https://raw.githubusercontent.com/OpenSprinkler/Firmware-Updater/master/"
 
 
 #endif // DEFINES_H
