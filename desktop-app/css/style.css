@@ -1,0 +1,13 @@
+/* Empty. Add your own CSS if you like */
+.center {
+	text-align: center
+}
+.bullet-list {
+	list-style: initial;
+}
+.bullet-list > li {
+	padding: 3px;
+}
+.bullet-list > p {
+	font-size: large;
+}

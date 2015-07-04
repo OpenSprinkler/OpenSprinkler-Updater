@@ -1,0 +1,34 @@
+<ion-view view-title="OpenSprinkler Firmware Updater">
+    <ion-content class="padding">
+        <div class="list card">
+            <div class="item item-divider">Connected Devices</div>
+            <div class="item item-body">
+                <p class="center">No devices detected</p>
+
+                <button class="button button-block button-positive">
+                    Check for new devices
+                </button>
+            </div>
+        </div>
+
+        <div class="list card">
+            <div class="item item-divider">Recent Updates</div>
+            <div ng-repeat="release in fwReleases | limitTo:3">
+                <div class="item item-body">
+                    <div class="list">
+                        <div class="item item-divider">
+                            {{release.name}} released on {{release.created_at}}
+                        </div>
+                        <div class="item item-text-wrap">
+                            <ul ng-bind-html="release.body" class="bullet-list">
+                               {{release.body}}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </ion-content>
+</ion-view>

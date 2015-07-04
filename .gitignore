@@ -4,3 +4,4 @@ node_modules
 cache/
 build/OS-Updater/*
 *.DS_Store
+desktop-app/nwjs.app
