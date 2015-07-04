@@ -1,0 +1,6 @@
+.idea/
+*.log
+node_modules
+cache/
+build/OS-Updater/*
+*.DS_Store
