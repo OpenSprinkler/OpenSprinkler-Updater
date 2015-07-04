@@ -7,13 +7,13 @@ var appName = "OS-Updater";
 
 var nw = new NwBuilder( {
   files: "desktop-app/**",
-  platforms: [ "osx32", "win32", "linux32" ],
-  version: "0.11.6",
+  platforms: [ "osx", "win", "linux" ],
   appName: appName,
   appVersion: appPkg.version,
   winIco: "icons/win.ico",
   macIcns: "icons/mac.icns",
   buildType: "default",
+  macZip: false,
   mergeZip: false
 } );
 
