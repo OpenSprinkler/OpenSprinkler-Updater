@@ -1,5 +1,6 @@
 var exec = require( "child_process" ).exec,
-	async = require( "async" );
+	async = require( "async" ),
+	fs = require( "fs" );
 
 angular.module( "starter.controllers", [] )
 
@@ -52,7 +53,7 @@ angular.module( "starter.controllers", [] )
 			var regex = new RegExp( device.id, "g" );
 
 			exec( commandPrefix[platform] + device.command, function( error, stdout, stderr ) {
-				if ( regex.test( stderr ) ) {
+				if ( regex.test( stderr ) || regex.test( stdout ) ) {
 					$scope.deviceList.push( {
 						type: key
 					} );
@@ -71,25 +72,46 @@ angular.module( "starter.controllers", [] )
 		};
 	};
 
-	$scope.updateAction = function() {
+	$scope.updateAction = function( type ) {
+
+		if ( typeof $scope.latestRelease !== "object" || !$scope.latestRelease.name ) {
+			return;
+		}
+
+		// If the directory for the hardware type doesn't exist then create it
+		if ( !fs.existsSync( "firmware/" + type ) ) {
+			fs.mkdirSync( "firmware/" + type );
+		}
+
+		fs.writeFile( "firmware/" + type + "/" + $scope.latestRelease.name + ".hex", "Testing!", function( err ) {
+		    if ( err ) {
+		        console.log( err );
+		    }
+		} );
 
 	};
 
 	// Github API to get releases for OpenSprinkler firmware
 	$http.get( "https://api.github.com/repos/opensprinkler/opensprinkler-firmware/releases" ).success( function( releases ) {
-		for ( release in releases ) {
-			if ( releases.hasOwnProperty( release ) ) {
 
-				// Update the release date time to a readable string
-				releases[release].created_at = toUSDate( new Date( releases[release].created_at ) );
+		$scope.latestRelease = {};
 
-				// Update body text
-				releases[release].body = releases[release].body.replace( /[\-|\*|\+]\s(.*)?(?:\r\n)?/g, "<li>$1</li>\r\n" );
+		// Update the release date time to a readable string
+		$scope.latestRelease.releaseDate = toUSDate( new Date( releases[0].created_at ) );
+		$scope.latestRelease.name = releases[0].name;
+
+		// Update body text
+		changeLog = releases[0].body.split( "\r\n" );
+
+		for ( line in changeLog ) {
+			if ( changeLog.hasOwnProperty( line ) ) {
+				changeLog[line] = changeLog[line].replace( /^[\-|\*|\+]\s(.*)$/, "<li>$1</li>" );
+				changeLog[line] = changeLog[line].replace( /^(?!<li>.*<\/li>$)(.*)$/, "<p>$1</p>" );
 			}
 		}
 
-		window.test = releases;
-		$scope.fwReleases = releases;
+		$scope.latestRelease.changeLog = changeLog.join( "" );
+
 	} );
 
 	$scope.checkDevices();

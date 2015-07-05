@@ -1,37 +1,48 @@
 <ion-view view-title="OpenSprinkler Firmware Updater">
     <ion-content class="padding">
         <div class="list card">
+
             <div class="item item-divider">Connected Devices</div>
             <div class="item item-body">
+
                 <div class="center">
+
                     <ion-spinner ng-class="{ hidden: button.disabled === false }"></ion-spinner>
+
                     <div ng-repeat="device in deviceList">
-                        <button ng-click="updateAction()" class="button button-block button-stable">
-                            Update OpenSprinkler {{device.type}}
-                        </button>
+
+                        <div class="list left">
+                            <div class="item item-button-right">
+                                OpenSprinkler {{device.type}}
+                                <button ng-click="updateAction(device.type)" class="button button-stable">
+                                    <i class="ion-refresh"></i>
+                                    &nbsp;Update
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
+
                     <div ng-hide="deviceList.length">No devices found</div>
+
                 </div>
 
                 <button ng-click="checkDevices()" class="button button-block button-positive" ng-disabled="button.disabled">
                     {{button.text}}
                 </button>
+
             </div>
+
         </div>
 
-        <div class="list card">
-            <div class="item item-divider">Recent Updates</div>
-            <div ng-repeat="release in fwReleases | limitTo:3">
-                <div class="item item-body">
-                    <div class="list">
-                        <div class="item item-divider">
-                            {{release.name}} released on {{release.created_at}}
-                        </div>
-                        <div class="item item-text-wrap">
-                            <ul ng-bind-html="release.body" class="bullet-list"></ul>
-                        </div>
-                    </div>
-                </div>
+        <div class="list" ng-hide="!latestRelease">
+
+            <div class="item item-divider">
+                {{latestRelease.name}} recently released on {{latestRelease.releaseDate}}
+            </div>
+
+            <div class="item item-text-wrap">
+                <ul ng-bind-html="latestRelease.changeLog" class="bullet-list"></ul>
             </div>
 
         </div>

@@ -2,15 +2,21 @@
 .center {
 	text-align: center
 }
+.left {
+	text-align: left
+}
 .hidden {
 	display: none;
 }
 .bullet-list {
 	list-style: initial;
+	padding-left: 20px;
 }
 .bullet-list > li {
 	padding: 3px;
 }
 .bullet-list > p {
 	font-size: large;
+	margin-left: -15px;
+	padding: 5px;
 }
