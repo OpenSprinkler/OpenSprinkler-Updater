@@ -1,9 +1,10 @@
 // TODO: automate updating desktop-app/package.json version
 console.log( "Before running, make sure versions are updated in both package.json and desktop-app/package.json" );
 
-var NwBuilder = require( "node-webkit-builder" );
-var appPkg = require( "./desktop-app/package.json" );
-var appName = "OS-Updater";
+var NwBuilder = require( "node-webkit-builder" ),
+  appPkg = require( "./desktop-app/package.json" ),
+  fs = require( "fs" ),
+  appName = "OS-Updater";
 
 var nw = new NwBuilder( {
   files: "desktop-app/**",
@@ -32,8 +33,7 @@ nw.build()
 // create the regular .nw file for updates
 function createNW() {
   console.log( "Creating regular updater.nw for updates..." );
-  var fs = require( "fs" ),
-    archiver = require( "archiver" ),
+  var archiver = require( "archiver" ),
     archive = archiver( "zip" );
 
   var output = fs.createWriteStream( "./build/" + appName + "/OS-Updater-" + appPkg.version + ".nw" );
@@ -51,8 +51,13 @@ function createNW() {
 // create the mac DMG installer
 function createDMG() {
   console.log( "Creating Mac OS X DMG..." );
-  var appdmg = require( "appdmg" );
-  var ee = appdmg( {
+
+  if ( fs.existsSync( "./build/" + appName + "/OS-Updater.dmg" ) ) {
+    fs.unlinkSync( "./build/" + appName + "/OS-Updater.dmg" );
+  }
+
+  var appdmg = require( "appdmg" ),
+    ee = appdmg( {
     source: "./dmg.json",
     target: "./build/" + appName + "/OS-Updater.dmg"
   } );
