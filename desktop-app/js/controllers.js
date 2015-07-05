@@ -2,7 +2,28 @@ angular.module( "starter.controllers", [] )
 
 .controller( "DashCtrl", function( $scope, $http ) {
 
-	var exec = require( "child_process" ).exec;
+	$scope.button = {};
+
+	var exec = require( "child_process" ).exec,
+		checkDevices = function() {
+
+			// Indicate a device scan is underway
+			$scope.button.text = "Checking for devices...";
+			$scope.button.disabled = true;
+			$scope.deviceList = "";
+
+			// Perform scan
+
+			var cleanUp = function() {
+				$scope.$apply( function() {
+					$scope.button.text = "Check for new devices";
+					$scope.button.disabled = false;
+					$scope.deviceList = "No devices detected";
+				} );
+			};
+
+			setTimeout( cleanUp, 400 );
+		};
 
 	// Github API to get releases for OpenSprinkler firmware
 	$http.get( "https://api.github.com/repos/opensprinkler/opensprinkler-firmware/releases" ).success( function( releases ) {
@@ -20,6 +41,8 @@ angular.module( "starter.controllers", [] )
 		window.test = releases;
 		$scope.fwReleases = releases;
 	} );
+
+	checkDevices();
 
 } )
 

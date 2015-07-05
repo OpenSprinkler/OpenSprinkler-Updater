@@ -3,10 +3,13 @@
         <div class="list card">
             <div class="item item-divider">Connected Devices</div>
             <div class="item item-body">
-                <p class="center">No devices detected</p>
+                <div class="center">
+                    <ion-spinner ng-class="{ hidden: button.disabled === false }"></ion-spinner>
+                    {{deviceList}}
+                </div>
 
-                <button class="button button-block button-positive">
-                    Check for new devices
+                <button ng-click="updateAction()" class="button button-block button-positive" ng-disabled="button.disabled">
+                    {{button.text}}
                 </button>
             </div>
         </div>
@@ -20,9 +23,7 @@
                             {{release.name}} released on {{release.created_at}}
                         </div>
                         <div class="item item-text-wrap">
-                            <ul ng-bind-html="release.body" class="bullet-list">
-                               {{release.body}}
-                            </ul>
+                            <ul ng-bind-html="release.body" class="bullet-list"></ul>
                         </div>
                     </div>
                 </div>

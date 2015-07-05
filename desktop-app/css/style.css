@@ -2,6 +2,9 @@
 .center {
 	text-align: center
 }
+.hidden {
+	display: none;
+}
 .bullet-list {
 	list-style: initial;
 }
