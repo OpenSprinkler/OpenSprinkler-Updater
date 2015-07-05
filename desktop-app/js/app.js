@@ -1,4 +1,4 @@
-// OS-Updater
+// OpenSprinkler-FW-Updater
 // Samer Albahra
 
 var gui = require( "nw.gui" ),

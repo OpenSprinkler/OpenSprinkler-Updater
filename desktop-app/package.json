@@ -1,5 +1,5 @@
 {
-  "name": "OS-Updater",
+  "name": "OpenSprinkler-FW-Updater",
   "version": "1.0.0",
   "main": "index.html",
   "window": {

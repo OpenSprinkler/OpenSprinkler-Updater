@@ -4,7 +4,7 @@ console.log( "Before running, make sure versions are updated in both package.jso
 var NwBuilder = require( "node-webkit-builder" ),
   appPkg = require( "./desktop-app/package.json" ),
   fs = require( "fs" ),
-  appName = "OS-Updater";
+  appName = "OpenSprinkler-FW-Updater";
 
 var nw = new NwBuilder( {
   files: "desktop-app/**",
@@ -36,7 +36,7 @@ function createNW() {
   var archiver = require( "archiver" ),
     archive = archiver( "zip" );
 
-  var output = fs.createWriteStream( "./build/" + appName + "/OS-Updater-" + appPkg.version + ".nw" );
+  var output = fs.createWriteStream( "./build/" + appName + "/OpenSprinkler-FW-Updater-" + appPkg.version + ".nw" );
   output.on( "close", function() {
     console.log( ( archive.pointer() / 1000000 ).toFixed( 2 ) + "mb compressed" );
   } );
@@ -52,14 +52,14 @@ function createNW() {
 function createDMG() {
   console.log( "Creating Mac OS X DMG..." );
 
-  if ( fs.existsSync( "./build/" + appName + "/OS-Updater.dmg" ) ) {
-    fs.unlinkSync( "./build/" + appName + "/OS-Updater.dmg" );
+  if ( fs.existsSync( "./build/" + appName + "/OpenSprinkler-FW-Updater.dmg" ) ) {
+    fs.unlinkSync( "./build/" + appName + "/OpenSprinkler-FW-Updater.dmg" );
   }
 
   var appdmg = require( "appdmg" ),
     ee = appdmg( {
     source: "assets/dmg.json",
-    target: "./build/" + appName + "/OS-Updater.dmg"
+    target: "./build/" + appName + "/OpenSprinkler-FW-Updater.dmg"
   } );
 
   ee.on( "progress", function( info ) {
