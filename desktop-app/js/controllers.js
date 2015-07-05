@@ -7,9 +7,18 @@ angular.module( "os-updater.controllers", [] )
 .controller( "DashCtrl", function( $scope, $http ) {
 
 	var commandPrefix = {
-			win: process.cwd() + "\\avr\\win\\avrdude.exe -C avr\\win\\avrdude.conf ",
-			osx: "avr/osx/avrdude -C avr/osx/avrdude.conf ",
-			linux: "avrdude "
+			win: {
+				avr: process.cwd() + "\\avr\\win\\avrdude.exe -C avr\\win\\avrdude.conf ",
+				serial: ""
+			},
+			osx: {
+				avr: "avr/osx/avrdude -C avr/osx/avrdude.conf ",
+				serial: "ls /dev/{tty,cu}.*"
+			},
+			linux: {
+				avr: "avrdude ",
+				serial: "./avr/serialscan.sh"
+			}
 		},
 		deviceList = {
 			"v2.0": {
@@ -47,13 +56,26 @@ angular.module( "os-updater.controllers", [] )
 		$scope.deviceList = [];
 
 		var deviceFound = false,
-			startTime = new Date().getTime();
+			startTime = new Date().getTime(),
+			cleanUp = function() {
+				if ( new Date().getTime() - startTime < 800 ) {
+					setTimeout( cleanUp, 800 );
+					return;
+				}
+				$scope.button.text = "Check for new devices";
+				$scope.button.disabled = false;
+				$scope.$apply();
+			};
+
+		exec( commandPrefix[platform].serial, function( error, stdout, stderr ) {
+			console.log( error, stdout, stderr );
+		} );
 
 		// Perform scan
 		async.forEachOf( deviceList, function( device, key, callback ) {
 			var regex = new RegExp( device.id, "g" );
 
-			exec( commandPrefix[platform] + device.command, function( error, stdout, stderr ) {
+			exec( commandPrefix[platform].avr + device.command, function( error, stdout, stderr ) {
 				stdout = stdout || stderr;
 
 				if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
@@ -67,16 +89,6 @@ angular.module( "os-updater.controllers", [] )
 		}, function() {
 			cleanUp();
 		} );
-
-		var cleanUp = function() {
-			if ( new Date().getTime() - startTime < 800 ) {
-				setTimeout( cleanUp, 800 );
-				return;
-			}
-			$scope.button.text = "Check for new devices";
-			$scope.button.disabled = false;
-			$scope.$apply();
-		};
 	};
 
 	$scope.updateAction = function( type ) {

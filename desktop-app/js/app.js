@@ -6,7 +6,7 @@ var gui = require( "nw.gui" ),
 
 if ( process.platform === "darwin" ) {
     var nativeMenuBar = new gui.Menu( { type: "menubar" } );
-    nativeMenuBar.createMacBuiltin( "OS Updater", {
+    nativeMenuBar.createMacBuiltin( "OS FW Updater", {
       hideEdit: true
     } );
     win.menu = nativeMenuBar;
