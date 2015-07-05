@@ -11,8 +11,8 @@ var nw = new NwBuilder( {
   platforms: [ "osx", "win", "linux" ],
   appName: appName,
   appVersion: appPkg.version,
-  winIco: "icons/win.ico",
-  macIcns: "icons/mac.icns",
+  winIco: "assets/win.ico",
+  macIcns: "assets/mac.icns",
   buildType: "default",
   macZip: false,
   mergeZip: false
@@ -58,7 +58,7 @@ function createDMG() {
 
   var appdmg = require( "appdmg" ),
     ee = appdmg( {
-    source: "./dmg.json",
+    source: "assets/dmg.json",
     target: "./build/" + appName + "/OS-Updater.dmg"
   } );
 
