@@ -2,7 +2,7 @@ var exec = require( "child_process" ).exec,
 	async = require( "async" ),
 	fs = require( "fs" );
 
-angular.module( "starter.controllers", [] )
+angular.module( "os-updater.controllers", [] )
 
 .controller( "DashCtrl", function( $scope, $http ) {
 
