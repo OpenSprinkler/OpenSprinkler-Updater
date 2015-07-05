@@ -7,7 +7,7 @@ angular.module( "os-updater.controllers", [] )
 .controller( "DashCtrl", function( $scope, $http ) {
 
 	var commandPrefix = {
-			win: "avr/win/avrdude.exe -C avr/win/avrdude.conf ",
+			win: process.cwd() + "\\avr\\win\\avrdude.exe -C avr\\win\\avrdude.conf ",
 			osx: "avr/osx/avrdude -C avr/osx/avrdude.conf ",
 			linux: "avrdude "
 		},
