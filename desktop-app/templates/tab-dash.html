@@ -14,7 +14,7 @@
                         <div class="list left">
                             <div class="item item-button-right">
                                 OpenSprinkler {{device.type}}
-                                <button ng-click="updateAction(device.type)" class="button button-stable">
+                                <button ng-click="updateAction(device.type)" class="button button-stable" ng-disabled="button.disabled">
                                     <i class="ion-refresh"></i>
                                     &nbsp;Update
                                 </button>

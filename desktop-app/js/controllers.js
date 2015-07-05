@@ -54,7 +54,9 @@ angular.module( "os-updater.controllers", [] )
 			var regex = new RegExp( device.id, "g" );
 
 			exec( commandPrefix[platform] + device.command, function( error, stdout, stderr ) {
-				if ( regex.test( stderr ) || regex.test( stdout ) ) {
+				stdout = stdout || stderr;
+
+				if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
 					$scope.deviceList.push( {
 						type: key
 					} );
