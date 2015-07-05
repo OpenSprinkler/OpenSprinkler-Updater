@@ -1,6 +1,17 @@
 // OS-Updater
 // Samer Albahra
 
+var gui = require( "nw.gui" ),
+    win = gui.Window.get();
+
+if ( process.platform === "darwin" ) {
+    var nativeMenuBar = new gui.Menu( { type: "menubar" } );
+    nativeMenuBar.createMacBuiltin( "OS Updater", {
+      hideEdit: true
+    } );
+    win.menu = nativeMenuBar;
+}
+
 angular.module( "starter", [ "ionic", "starter.controllers", "starter.services" ] )
 
 .config( function( $stateProvider, $urlRouterProvider ) {

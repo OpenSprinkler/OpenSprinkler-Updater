@@ -5,10 +5,15 @@
             <div class="item item-body">
                 <div class="center">
                     <ion-spinner ng-class="{ hidden: button.disabled === false }"></ion-spinner>
-                    {{deviceList}}
+                    <div ng-repeat="device in deviceList">
+                        <button ng-click="updateAction()" class="button button-block button-stable">
+                            Update OpenSprinkler {{device.type}}
+                        </button>
+                    </div>
+                    <div ng-hide="deviceList.length">No devices found</div>
                 </div>
 
-                <button ng-click="updateAction()" class="button button-block button-positive" ng-disabled="button.disabled">
+                <button ng-click="checkDevices()" class="button button-block button-positive" ng-disabled="button.disabled">
                     {{button.text}}
                 </button>
             </div>
