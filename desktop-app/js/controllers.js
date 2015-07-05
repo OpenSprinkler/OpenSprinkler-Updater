@@ -46,7 +46,8 @@ angular.module( "os-updater.controllers", [] )
 		$scope.button.disabled = true;
 		$scope.deviceList = [];
 
-		var deviceFound = false;
+		var deviceFound = false,
+			startTime = new Date().getTime();
 
 		// Perform scan
 		async.forEachOf( deviceList, function( device, key, callback ) {
@@ -66,6 +67,10 @@ angular.module( "os-updater.controllers", [] )
 		} );
 
 		var cleanUp = function() {
+			if ( new Date().getTime() - startTime < 800 ) {
+				setTimeout( cleanUp, 800 );
+				return;
+			}
 			$scope.button.text = "Check for new devices";
 			$scope.button.disabled = false;
 			$scope.$apply();
