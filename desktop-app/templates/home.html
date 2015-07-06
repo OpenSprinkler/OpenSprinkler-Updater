@@ -1,0 +1,55 @@
+<ion-view view-title="OpenSprinkler Firmware Updater">
+    <ion-content class="padding">
+        <div class="list card">
+
+            <div class="item item-divider">Connected Devices</div>
+            <div class="item item-body">
+
+                <div class="center">
+
+                    <div ng-repeat="device in deviceList">
+
+                        <div class="list left">
+                            <div class="item item-button-right">
+                                OpenSprinkler {{device.type}}
+                                <button ng-click="updateAction(device.type)" class="button button-stable" ng-disabled="button.disabled">
+                                    <i class="ion-refresh"></i>
+                                    &nbsp;Update
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div ng-hide="deviceList.length || button.disabled">No devices found</div>
+
+                </div>
+
+                <button ng-click="checkDevices()" class="button button-block button-positive" ng-disabled="button.disabled">
+                    {{button.text}}
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="list left" ng-hide="!latestRelease">
+            <div class="item item-button-right">
+                Latest firmware is {{latestRelease.name}} released on {{latestRelease.releaseDate}}
+                <button ng-click="showChangelog()" class="button button-stable">
+                    Changelog
+                </button>
+            </div>
+        </div>
+
+        <div class="list card" ng-hide="!upgradeLog">
+            <div class="item item-divider">Upgrade Log Output</div>
+            <div class="item item-body" ng-bind-html="upgradeLog">
+            </div>
+        </div>
+
+		<div class="center">
+			Version 1.0.0
+		</div>
+    </ion-content>
+</ion-view>

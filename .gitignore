@@ -1,0 +1,7 @@
+.idea/
+*.log
+node_modules
+cache/
+build/*
+*.DS_Store
+desktop-app/nwjs.app

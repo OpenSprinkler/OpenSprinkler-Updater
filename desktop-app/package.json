@@ -1,0 +1,23 @@
+{
+  "name": "OpenSprinkler-FW-Updater",
+  "version": "1.0.0",
+  "main": "index.html",
+  "window": {
+    "title": "OpenSprinkler Firmware Updater",
+    "icon": "img/icon.png",
+    "toolbar": false,
+    "resizable": true,
+    "fullscreen": false,
+    "width": 530,
+    "height": 600,
+    "position": "center"
+  },
+  "webkit": {
+    "page-cache": true
+  },
+  "user-agent": "Mozilla/5.0 (Linux; U; en-gb; KFTHWI Build/JDQ39) AppleWebKit/535.19 (KHTML, like Gecko) Silk/3.16 Safari/535.19",
+  "no-edit-menu": true,
+  "dependencies": {
+    "async": "^1.3.0"
+  }
+}
