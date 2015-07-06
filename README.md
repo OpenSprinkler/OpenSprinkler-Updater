@@ -6,8 +6,6 @@ The OpenSprinkler firmware updater tool for Arduino based devices. This applicat
 
 For install instructions please refer to the instructions on the support site at: https://opensprinkler.freshdesk.com/support/solutions/articles/5000381694-update-opensprinkler-firmware-with-downloads-
 
----
-
 [official]: https://opensprinkler.com
 [help]: http://support.opensprinkler.com
 [changelog]: https://github.com/OpenSprinkler/OpenSprinkler-FW-Updater/releases
