@@ -227,7 +227,7 @@ angular.module( "os-updater.controllers", [] )
 					status: function( callback ) {
 						var command = commandPrefix[platform] +
 								( deviceList[type].usePort && port ? "-P " + port + " " : "" ) +
-								deviceList[type].command + " -q -F -U flash:w:" + "firmwares/" + deviceList[type] + "/" + file;
+								deviceList[type].command + " -q -F -U flash:w:" + "firmwares/" + type + "/" + file;
 
 						$scope.button.text = "Updating OpenSprinkler " + type + " firmware...";
 						$scope.$apply();
@@ -250,7 +250,7 @@ angular.module( "os-updater.controllers", [] )
 					if ( results.status ) {
 						$ionicPopup.alert( {
 							title: "Upgrade OpenSprinkler " + type,
-							template: "<p class='center'>The firmware update was successful and the device is rebooting and will be restored to factory settings.</p>"
+							template: "<p class='center'>The firmware update was successful and the device is rebooting. Please note the device will be restored to its factory settings.</p>"
 						} );
 					} else {
 						$ionicPopup.alert( {
@@ -277,7 +277,7 @@ angular.module( "os-updater.controllers", [] )
 			areYouSure( $ionicPopup, "Upgrade OpenSprinkler " + type,
 				"<p class='center'>Please note the device will be restored to it's default settings during the update so please make sure you already have a backup." +
 				"<br><br>" +
-				"Are you sure you want to upgrade OpenSprinkler " + type + "?</p>", update );
+				"Are you sure you want to upgrade OpenSprinkler " + type + " to firmware?</p>", update );
 	};
 
 	$scope.showChangelog = function() {
@@ -293,6 +293,7 @@ angular.module( "os-updater.controllers", [] )
 
 		var line;
 
+		$scope.allReleases = releases;
 		$scope.latestRelease = {};
 
 		// Update the release date time to a readable string
@@ -316,7 +317,7 @@ angular.module( "os-updater.controllers", [] )
 	$scope.checkDevices();
 
 	function downloadFirmware( device, version, callback ) {
-		var url = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/nodejs-rewrite/compiled-fw/" + device + "/firmware" + version + ".hex";
+		var url = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/master/compiled-fw/" + device + "/firmware" + version + ".hex";
 
 		// If the directory for the hardware type doesn't exist then create it
 		if ( !fs.existsSync( "firmwares/" + device ) ) {
