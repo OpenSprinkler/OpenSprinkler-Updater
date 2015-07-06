@@ -5,4 +5,3 @@ cache/
 build/*
 *.DS_Store
 desktop-app/nwjs.app
-desktop-app/firmwares/**
