@@ -5,7 +5,7 @@
   "window": {
     "title": "OpenSprinkler Firmware Updater",
     "icon": "img/icon.png",
-    "toolbar": false,
+    "toolbar": true,
     "resizable": true,
     "fullscreen": false,
     "width": 530,

@@ -7,18 +7,9 @@ angular.module( "os-updater.controllers", [] )
 .controller( "DashCtrl", function( $scope, $http ) {
 
 	var commandPrefix = {
-			win: {
-				avr: process.cwd() + "\\avr\\win\\avrdude.exe -C avr\\win\\avrdude.conf ",
-				serial: ""
-			},
-			osx: {
-				avr: "avr/osx/avrdude -C avr/osx/avrdude.conf ",
-				serial: "ls /dev/{tty,cu}.*"
-			},
-			linux: {
-				avr: "avrdude ",
-				serial: "./avr/serialscan.sh"
-			}
+			win: process.cwd() + "\\avr\\win\\avrdude.exe -C avr\\win\\avrdude.conf ",
+			osx: "avr/osx/avrdude -C avr/osx/avrdude.conf ",
+			linux: "avrdude "
 		},
 		deviceList = {
 			"v2.0": {
@@ -57,6 +48,30 @@ angular.module( "os-updater.controllers", [] )
 
 		var deviceFound = false,
 			startTime = new Date().getTime(),
+			scan = function() {
+				async.forEachOf( deviceList, function( device, key, callback ) {
+					var regex = new RegExp( device.id, "g" );
+
+					exec( commandPrefix[platform] + ( port ? "-P " + port + " " : "" ) + device.command, function( error, stdout, stderr ) {
+						stdout = stdout || stderr;
+
+						console.log( "Command: " + commandPrefix[platform] + ( port ? "-P " + port + " " : "" ) + device.command, device, stdout );
+
+						if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
+
+							console.log( "Found OpenSprinkler " + key );
+
+							$scope.deviceList.push( {
+								type: key
+							} );
+						}
+
+						callback();
+					} );
+				}, function() {
+					cleanUp();
+				} );
+			},
 			cleanUp = function() {
 				if ( new Date().getTime() - startTime < 800 ) {
 					setTimeout( cleanUp, 800 );
@@ -65,30 +80,51 @@ angular.module( "os-updater.controllers", [] )
 				$scope.button.text = "Check for new devices";
 				$scope.button.disabled = false;
 				$scope.$apply();
-			};
+			},
+			port;
 
-		exec( commandPrefix[platform].serial, function( error, stdout, stderr ) {
-			console.log( error, stdout, stderr );
-		} );
+		if ( platform === "osx" ) {
+			async.parallel( {
+				ports: function( callback ) {
+					exec( "ls /dev/cu.*", function( error, stdout, stderr ) {
+						callback( null, stdout.split( "\n" ) );
 
-		// Perform scan
-		async.forEachOf( deviceList, function( device, key, callback ) {
-			var regex = new RegExp( device.id, "g" );
+						console.log( "Found the following ports on your system: ", stdout.split( "\n" ) );
 
-			exec( commandPrefix[platform].avr + device.command, function( error, stdout, stderr ) {
-				stdout = stdout || stderr;
+					} );
+				},
+				devices: function( callback ) {
+					exec( "avr/serial.osx.sh", function( error, stdout, stderr ) {
+						callback( null, stdout.split( "\n" ) );
 
-				if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
-					$scope.deviceList.push( {
-						type: key
+						console.log( "Found the following devices on your system: ", stdout.split( "\n" ) );
+
 					} );
 				}
+			}, function( err, data ) {
+				var item, location;
 
-				callback();
+				for ( device in data.devices ) {
+					if ( data.devices.hasOwnProperty( device ) ) {
+						item = data.devices[device].split( ":" );
+						if ( item.length < 2 ) {
+							continue;
+						}
+
+						console.log( "Checking device for matching product and vendor IDs", item );
+
+						if ( item[0] === "0x1a86" && item[1] === "0x7523" ) {
+							var location = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+							port = findPort( data.ports, location );
+
+							console.log( "Found a match at: " + port );
+
+						}
+					}
+				}
+				scan();
 			} );
-		}, function() {
-			cleanUp();
-		} );
+		}
 	};
 
 	$scope.updateAction = function( type ) {
@@ -138,6 +174,18 @@ angular.module( "os-updater.controllers", [] )
 } )
 
 .controller( "AboutCtrl", function( $scope ) {} );
+
+function findPort( ports, location ) {
+	for ( port in ports ) {
+		if ( ports.hasOwnProperty( port ) ) {
+			if ( ports[port].indexOf( location ) !== -1 ) {
+				return ports[port];
+			}
+		}
+	}
+
+	return false;
+}
 
 // Resolves the Month / Day / Year of a Date object
 function toUSDate( date ) {
