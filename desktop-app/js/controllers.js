@@ -22,10 +22,12 @@ angular.module( "os-updater.controllers", [] )
 			},
 			"v2.2": {
 				id: "0x1e96",
+				usePort: true,
 				command: "-c arduino -p m644 -b 115200 "
 			},
 			"v2.3": {
 				id: "0x1e97",
+				usePort: true,
 				command: "-c arduino -p m1284p -b 115200 "
 			}
 		},
@@ -49,13 +51,14 @@ angular.module( "os-updater.controllers", [] )
 		var deviceFound = false,
 			startTime = new Date().getTime(),
 			scan = function() {
-				async.forEachOf( deviceList, function( device, key, callback ) {
-					var regex = new RegExp( device.id, "g" );
+				async.forEachOfSeries( deviceList, function( device, key, callback ) {
+					var regex = new RegExp( device.id, "g" ),
+						command = commandPrefix[platform] + ( device.usePort && port ? "-P " + port + " " : "" ) + device.command;
 
-					exec( commandPrefix[platform] + ( port ? "-P " + port + " " : "" ) + device.command, function( error, stdout, stderr ) {
+					exec( command, function( error, stdout, stderr ) {
 						stdout = stdout || stderr;
 
-						console.log( "Command: " + commandPrefix[platform] + ( port ? "-P " + port + " " : "" ) + device.command, device, stdout );
+						console.log( "Command: " + command, device, stdout );
 
 						if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
 
@@ -66,7 +69,7 @@ angular.module( "os-updater.controllers", [] )
 							} );
 						}
 
-						callback();
+						setTimeout( callback, 200 );
 					} );
 				}, function() {
 					cleanUp();
@@ -88,17 +91,11 @@ angular.module( "os-updater.controllers", [] )
 				ports: function( callback ) {
 					exec( "ls /dev/cu.*", function( error, stdout, stderr ) {
 						callback( null, stdout.split( "\n" ) );
-
-						console.log( "Found the following ports on your system: ", stdout.split( "\n" ) );
-
 					} );
 				},
 				devices: function( callback ) {
 					exec( "avr/serial.osx.sh", function( error, stdout, stderr ) {
 						callback( null, stdout.split( "\n" ) );
-
-						console.log( "Found the following devices on your system: ", stdout.split( "\n" ) );
-
 					} );
 				}
 			}, function( err, data ) {
@@ -110,8 +107,6 @@ angular.module( "os-updater.controllers", [] )
 						if ( item.length < 2 ) {
 							continue;
 						}
-
-						console.log( "Checking device for matching product and vendor IDs", item );
 
 						if ( item[0] === "0x1a86" && item[1] === "0x7523" ) {
 							var location = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
