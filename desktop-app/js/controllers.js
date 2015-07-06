@@ -4,7 +4,7 @@ var exec = require( "child_process" ).exec,
 
 angular.module( "os-updater.controllers", [] )
 
-.controller( "DashCtrl", function( $scope, $ionicPopup, $http ) {
+.controller( "HomeCtrl", function( $scope, $ionicPopup, $http ) {
 
 	var arch = process.arch === "x64" ? "64" : "32",
 		commandPrefix = {
@@ -94,9 +94,6 @@ angular.module( "os-updater.controllers", [] )
 			port;
 
 		if ( platform === "osx" ) {
-							$scope.deviceList.push( {
-								type: "v2.1"
-							} );
 			async.parallel( {
 				ports: function( callback ) {
 					exec( "ls /dev/cu.*", function( error, stdout, stderr ) {
@@ -206,6 +203,7 @@ angular.module( "os-updater.controllers", [] )
 	$scope.updateAction = function( type ) {
 
 		var update = function() {
+				$scope.upgradeLog = "";
 				$scope.button.disabled = true;
 				$scope.button.text = "Updating OpenSprinkler " + type + "...";
 
@@ -238,6 +236,10 @@ angular.module( "os-updater.controllers", [] )
 							stdout = stdout || stderr;
 
 							var result = stdout.indexOf( "verified" ) === -1 ? false : true;
+
+							if ( !result ) {
+								$scope.upgradeLog = stdout;
+							}
 
 							callback( null, result );
 
@@ -276,6 +278,14 @@ angular.module( "os-updater.controllers", [] )
 				"<p class='center'>Please note the device will be restored to it's default settings during the update so please make sure you already have a backup." +
 				"<br><br>" +
 				"Are you sure you want to upgrade OpenSprinkler " + type + "?</p>", update );
+	};
+
+	$scope.showChangelog = function() {
+		$ionicPopup.alert( {
+			title: "Firmware " + $scope.latestRelease.name + " Changelog",
+			template: $scope.latestRelease.changeLog,
+			cssClass: "changelog"
+		} );
 	};
 
 	// Github API to get releases for OpenSprinkler firmware

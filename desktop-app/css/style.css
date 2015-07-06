@@ -19,3 +19,6 @@
 	margin-left: -15px;
 	padding: 5px;
 }
+.changelog > .popup {
+	width: 60%;
+}
