@@ -17,8 +17,7 @@ angular.module( "os-updater.controllers", [] )
 				command: "-c usbtiny -p m644 "
 			},
 			"v2.1": {
-				id: "0x1e96",
-				command: "-c usbasp -p m644 "
+				id: "0x1e96"
 			},
 			"v2.2": {
 				id: "0x1e96",
@@ -55,22 +54,27 @@ angular.module( "os-updater.controllers", [] )
 					var regex = new RegExp( device.id, "g" ),
 						command = commandPrefix[platform] + ( device.usePort && port ? "-P " + port + " " : "" ) + device.command;
 
-					exec( command, function( error, stdout, stderr ) {
-						stdout = stdout || stderr;
+					if ( device.command ) {
 
-						console.log( "Command: " + command, device, stdout );
+						exec( command, function( error, stdout, stderr ) {
+							stdout = stdout || stderr;
 
-						if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
+							console.log( "Command: " + command, device, stdout );
 
-							console.log( "Found OpenSprinkler " + key );
+							if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
 
-							$scope.deviceList.push( {
-								type: key
-							} );
-						}
+								console.log( "Found OpenSprinkler " + key );
 
-						setTimeout( callback, 200 );
-					} );
+								$scope.deviceList.push( {
+									type: key
+								} );
+							}
+
+							setTimeout( callback, 200 );
+						} );
+					} else {
+						callback();
+					}
 				}, function() {
 					cleanUp();
 				} );
@@ -106,6 +110,14 @@ angular.module( "os-updater.controllers", [] )
 						item = data.devices[device].split( ":" );
 						if ( item.length < 2 ) {
 							continue;
+						}
+
+						if ( item[0] === "0x16c0" && item[1] === "0x05dc" ) {
+							console.log( "Found OpenSprinkler v2.1" );
+
+							$scope.deviceList.push( {
+								type: "v2.1"
+							} );
 						}
 
 						if ( item[0] === "0x1a86" && item[1] === "0x7523" ) {
