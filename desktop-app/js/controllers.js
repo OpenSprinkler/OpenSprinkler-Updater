@@ -162,8 +162,34 @@ angular.module( "os-updater.controllers", [] )
 				scan();
 			} );
 		} else if ( platform === "win" ) {
-			exec( process.cwd() + "\\avr\\serial.win.bat", function( error, stdout, stderr ) {
-				console.log( stdout );
+			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", function( error, stdout, stderr ) {
+				var data = stdout.split( "\n" ),
+					item;
+
+				for ( item in data ) {
+					if ( data.hasOwnProperty( item ) ) {
+						item = data[item].split( "," );
+
+						if ( item.length < 3 ) {
+							continue;
+						}
+
+						if ( /VID_16C0/g.test( item[2] ) && /PID_05DC/g.test( item[2] ) ) {
+							console.log( "Found OpenSprinkler v2.1" );
+
+							$scope.deviceList.push( {
+								type: "v2.1"
+							} );
+						}
+
+						if ( /VID_1A86/g.test( item[2] ) && /PID_7523/g.test( item[2] ) ) {
+							port = item[1].match( /COM(\d+)/i );
+							port = port.length ? port[0] : undefined;
+						}
+					}
+				}
+
+				scan();
 			} );
 		}
 	};
