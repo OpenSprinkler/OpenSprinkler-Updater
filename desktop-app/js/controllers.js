@@ -145,7 +145,7 @@ angular.module( "os-updater.controllers", [] )
 							continue;
 						}
 
-						if ( item[1] === "0x16c0" && item[2] === "0x05dc" ) {
+						if ( item[1] === "16c0" && item[2] === "05dc" ) {
 							console.log( "Found OpenSprinkler v2.1" );
 
 							$scope.deviceList.push( {
@@ -153,7 +153,7 @@ angular.module( "os-updater.controllers", [] )
 							} );
 						}
 
-						if ( item[1] === "0x1a86" && item[2] === "0x7523" ) {
+						if ( item[1] === "1a86" && item[2] === "7523" ) {
 							port = item[0];
 						}
 					}
