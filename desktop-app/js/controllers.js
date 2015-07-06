@@ -6,10 +6,11 @@ angular.module( "os-updater.controllers", [] )
 
 .controller( "DashCtrl", function( $scope, $http ) {
 
-	var commandPrefix = {
+	var arch = process.arch === "x64" ? "64" : "32",
+		commandPrefix = {
 			win: process.cwd() + "\\avr\\win\\avrdude.exe -C avr\\win\\avrdude.conf ",
 			osx: "avr/osx/avrdude -C avr/osx/avrdude.conf ",
-			linux: "avrdude "
+			linux: "./avr/linux" + arch + "/avrdude -C ./avr/linux" + arch + "/avrdude.conf "
 		},
 		deviceList = {
 			"v2.0": {
