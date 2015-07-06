@@ -18,7 +18,9 @@ angular.module( "os-updater.controllers", [] )
 				command: "-c usbtiny -p m644 "
 			},
 			"v2.1": {
-				id: "0x1e96"
+				id: "0x1e96",
+				command: "-c usbasp -p m644 ",
+				preventScan: true
 			},
 			"v2.2": {
 				id: "0x1e96",
@@ -55,7 +57,7 @@ angular.module( "os-updater.controllers", [] )
 					var regex = new RegExp( device.id, "g" ),
 						command = commandPrefix[platform] + ( device.usePort && port ? "-P " + port + " " : "" ) + device.command;
 
-					if ( device.command ) {
+					if ( device.preventScan !== true ) {
 
 						exec( command, function( error, stdout, stderr ) {
 							stdout = stdout || stderr;
@@ -92,6 +94,9 @@ angular.module( "os-updater.controllers", [] )
 			port;
 
 		if ( platform === "osx" ) {
+							$scope.deviceList.push( {
+								type: "v2.1"
+							} );
 			async.parallel( {
 				ports: function( callback ) {
 					exec( "ls /dev/cu.*", function( error, stdout, stderr ) {
@@ -200,21 +205,46 @@ angular.module( "os-updater.controllers", [] )
 
 	$scope.updateAction = function( type ) {
 
+		var startTime = new Date().getTime(),
+			cleanUp = function() {
+				if ( new Date().getTime() - startTime < 800 ) {
+					setTimeout( cleanUp, 800 );
+					return;
+				}
+				$scope.button.text = "Check for new devices";
+				$scope.button.disabled = false;
+				$scope.$apply();
+			};
+
+		$scope.button.disabled = true;
+
 		if ( typeof $scope.latestRelease !== "object" || !$scope.latestRelease.name ) {
-			return;
+			var available = fs.readdirSync( "firmwares/" + deviceList[type] ).sort( sortFirmwares );
+		} else {
+			$scope.button.text = "Downloading latest firmware...";
+
+			async.series( {
+				download: function( callback ) {
+					downloadFirmware( type, $scope.latestRelease.name, callback );
+				},
+				status: function( callback ) {
+					var command = commandPrefix[platform] + ( deviceList[type].usePort && port ? "-P " + port + " " : "" ) + " -q -F -U flash:w:" + deviceList[type].command;
+
+					exec( command, function( error, stdout, stderr ) {
+						stdout = stdout || stderr;
+
+						var result = stdout.indexOf( "verified" ) === -1 ? false : true;
+
+						callback( null, result );
+
+						console.log( "OpenSprinkler " + type + " upgrade " + ( result ? "succeeded" : "failed" ) );
+					} );
+				}
+			}, function( err, results ) {
+				console.log( results );
+				cleanUp();
+			} );
 		}
-
-		// If the directory for the hardware type doesn't exist then create it
-		if ( !fs.existsSync( "firmware/" + type ) ) {
-			fs.mkdirSync( "firmware/" + type );
-		}
-
-		fs.writeFile( "firmware/" + type + "/" + $scope.latestRelease.name + ".hex", "Testing!", function( err ) {
-		    if ( err ) {
-		        console.log( err );
-		    }
-		} );
-
 	};
 
 	// Github API to get releases for OpenSprinkler firmware
@@ -241,24 +271,26 @@ angular.module( "os-updater.controllers", [] )
 	} );
 
 	$scope.checkDevices();
-/*
+
 	function downloadFirmware( device, version, callback ) {
 		var url = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/nodejs-rewrite/compiled-fw/" + device + "/firmware" + version + ".hex";
-			file = fs.createWriteStream( "firmwares/" + device + "/" + version + ".hex" );
 
-		console.log( url )
+		// If the directory for the hardware type doesn't exist then create it
+		if ( !fs.existsSync( "firmwares/" + device ) ) {
+			fs.mkdirSync( "firmwares/" + device );
+		}
 
-		$http.get( url, function( response ) {
-			console.log( response )
-			response.pipe( file );
-			file.on( "finish", function() {
-				file.close( callback );
-			} );
-		} );
+		$http.get( url ).then(
+			function( response ) {
+				fs.writeFile( "firmwares/" + device + "/" + version + ".hex", response.data, callback );
+				console.log( "Downloaded firmware " + version + " for OpenSprinkler " + version + " successfully!" );
+			},
+			function( err ) {
+				callback();
+				console.log( "Downloaded failed for firmware " + version + " for OpenSprinkler " + version );
+			}
+		);
 	}
-
-	downloadFirmware( "v2.0", "2.1.5", function( a ) { console.log( a ) } );
-*/
 } )
 
 .controller( "AboutCtrl", function( $scope ) {} );
@@ -274,6 +306,21 @@ function findPort( ports, location ) {
 
 	return false;
 }
+
+function sortFirmwares( a, b ) {
+	var filter = /\d\.\d\.\d/g
+
+    a = parseInt( a.match( filter )[0].replace( /\./g, "" ) );
+    b = parseInt( b.match( filter )[0].replace( /\./g, "" ) );
+    console.log( a, b );
+    if ( a < b ) {
+        return -1;
+    }
+    if ( a > b ) {
+        return 1;
+    }
+    return 0;
+};
 
 // Resolves the Month / Day / Year of a Date object
 function toUSDate( date ) {
