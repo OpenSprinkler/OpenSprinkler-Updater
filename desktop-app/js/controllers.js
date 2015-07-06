@@ -161,6 +161,10 @@ angular.module( "os-updater.controllers", [] )
 
 				scan();
 			} );
+		} else if ( platform === "win" ) {
+			exec( process.cwd() + "\\avr\\serial.win.bat", function( error, stdout, stderr ) {
+				console.log( stdout );
+			} );
 		}
 	};
 
