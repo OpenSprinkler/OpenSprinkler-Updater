@@ -49,6 +49,35 @@ angular.module( "os-updater.controllers", [] )
 
 		var deviceFound = false,
 			startTime = new Date().getTime(),
+			parseDevices = function( err, data ) {
+				var item, location;
+
+				for ( device in data.devices ) {
+					if ( data.devices.hasOwnProperty( device ) ) {
+						item = data.devices[device].split( ":" );
+						if ( item.length < 2 ) {
+							continue;
+						}
+
+						if ( item[0] === "0x16c0" && item[1] === "0x05dc" ) {
+							console.log( "Found OpenSprinkler v2.1" );
+
+							$scope.deviceList.push( {
+								type: "v2.1"
+							} );
+						}
+
+						if ( item[0] === "0x1a86" && item[1] === "0x7523" ) {
+							var location = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+							port = findPort( data.ports, location );
+
+							console.log( "Found a match at: " + port );
+
+						}
+					}
+				}
+				scan();
+			},
 			scan = function() {
 				async.forEachOfSeries( deviceList, function( device, key, callback ) {
 					var regex = new RegExp( device.id, "g" ),
@@ -102,34 +131,10 @@ angular.module( "os-updater.controllers", [] )
 						callback( null, stdout.split( "\n" ) );
 					} );
 				}
-			}, function( err, data ) {
-				var item, location;
-
-				for ( device in data.devices ) {
-					if ( data.devices.hasOwnProperty( device ) ) {
-						item = data.devices[device].split( ":" );
-						if ( item.length < 2 ) {
-							continue;
-						}
-
-						if ( item[0] === "0x16c0" && item[1] === "0x05dc" ) {
-							console.log( "Found OpenSprinkler v2.1" );
-
-							$scope.deviceList.push( {
-								type: "v2.1"
-							} );
-						}
-
-						if ( item[0] === "0x1a86" && item[1] === "0x7523" ) {
-							var location = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
-							port = findPort( data.ports, location );
-
-							console.log( "Found a match at: " + port );
-
-						}
-					}
-				}
-				scan();
+			}, parseDevices );
+		} else if ( platform === "linux" ) {
+			exec( "./avr/serial.linux.sh", function( error, stdout, stderr ) {
+				callback( null, stdout.split( "\n" ) );
 			} );
 		}
 	};
