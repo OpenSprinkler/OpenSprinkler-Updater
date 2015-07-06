@@ -8,7 +8,7 @@ angular.module( "os-updater.controllers", [] )
 
 	var arch = process.arch === "x64" ? "64" : "32",
 		commandPrefix = {
-			win: process.cwd() + "\\avr\\win\\avrdude.exe -C avr\\win\\avrdude.conf ",
+			win: process.cwd() + "\\avr\\win\\avrdude.exe -C " + process.cwd() + "\\avr\\win\\avrdude.conf ",
 			osx: "avr/osx/avrdude -C avr/osx/avrdude.conf ",
 			linux: "./avr/linux" + arch + "/avrdude -C ./avr/linux" + arch + "/avrdude.conf "
 		},
@@ -155,6 +155,8 @@ angular.module( "os-updater.controllers", [] )
 
 						if ( item[1] === "1a86" && item[2] === "7523" ) {
 							port = item[0];
+
+							console.log( "Found a match at: " + port );
 						}
 					}
 				}
@@ -185,6 +187,8 @@ angular.module( "os-updater.controllers", [] )
 						if ( /VID_1A86/g.test( item[2] ) && /PID_7523/g.test( item[2] ) ) {
 							port = item[1].match( /COM(\d+)/i );
 							port = port.length ? port[0] : undefined;
+
+							console.log( "Found a match at: " + port );
 						}
 					}
 				}
@@ -237,7 +241,24 @@ angular.module( "os-updater.controllers", [] )
 	} );
 
 	$scope.checkDevices();
+/*
+	function downloadFirmware( device, version, callback ) {
+		var url = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/nodejs-rewrite/compiled-fw/" + device + "/firmware" + version + ".hex";
+			file = fs.createWriteStream( "firmwares/" + device + "/" + version + ".hex" );
 
+		console.log( url )
+
+		$http.get( url, function( response ) {
+			console.log( response )
+			response.pipe( file );
+			file.on( "finish", function() {
+				file.close( callback );
+			} );
+		} );
+	}
+
+	downloadFirmware( "v2.0", "2.1.5", function( a ) { console.log( a ) } );
+*/
 } )
 
 .controller( "AboutCtrl", function( $scope ) {} );
