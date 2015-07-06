@@ -106,7 +106,7 @@ angular.module( "os-updater.controllers", [] )
 					} );
 				}
 			}, function( err, data ) {
-				var item, location;
+				var item, location, device;
 
 				for ( device in data.devices ) {
 					if ( data.devices.hasOwnProperty( device ) ) {
@@ -124,7 +124,7 @@ angular.module( "os-updater.controllers", [] )
 						}
 
 						if ( item[0] === "0x1a86" && item[1] === "0x7523" ) {
-							var location = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+							location = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
 							port = findPort( data.ports, location );
 
 							console.log( "Found a match at: " + port );
@@ -291,6 +291,8 @@ angular.module( "os-updater.controllers", [] )
 	// Github API to get releases for OpenSprinkler firmware
 	$http.get( "https://api.github.com/repos/opensprinkler/opensprinkler-firmware/releases" ).success( function( releases ) {
 
+		var line;
+
 		$scope.latestRelease = {};
 
 		// Update the release date time to a readable string
@@ -337,6 +339,8 @@ angular.module( "os-updater.controllers", [] )
 .controller( "AboutCtrl", function( $scope ) {} );
 
 function findPort( ports, location ) {
+	var port;
+
 	for ( port in ports ) {
 		if ( ports.hasOwnProperty( port ) ) {
 			if ( ports[port].indexOf( location ) !== -1 ) {
@@ -349,7 +353,7 @@ function findPort( ports, location ) {
 }
 
 function sortFirmwares( a, b ) {
-	var filter = /\d\.\d\.\d/g
+	var filter = /\d\.\d\.\d/g;
 
     a = parseInt( a.match( filter )[0].replace( /\./g, "" ) );
     b = parseInt( b.match( filter )[0].replace( /\./g, "" ) );
