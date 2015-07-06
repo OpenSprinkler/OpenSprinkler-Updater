@@ -4,7 +4,7 @@ var exec = require( "child_process" ).exec,
 
 angular.module( "os-updater.controllers", [] )
 
-.controller( "DashCtrl", function( $scope, $http ) {
+.controller( "DashCtrl", function( $scope, $ionicPopup, $http ) {
 
 	var arch = process.arch === "x64" ? "64" : "32",
 		commandPrefix = {
@@ -83,8 +83,8 @@ angular.module( "os-updater.controllers", [] )
 				} );
 			},
 			cleanUp = function() {
-				if ( new Date().getTime() - startTime < 800 ) {
-					setTimeout( cleanUp, 800 );
+				if ( ( new Date().getTime() - startTime ) < 800 ) {
+					setTimeout( cleanUp, 500 );
 					return;
 				}
 				$scope.button.text = "Check for new devices";
@@ -205,46 +205,77 @@ angular.module( "os-updater.controllers", [] )
 
 	$scope.updateAction = function( type ) {
 
-		var startTime = new Date().getTime(),
+		var update = function() {
+				$scope.button.disabled = true;
+				$scope.button.text = "Updating OpenSprinkler " + type + "...";
+
+				startTime = new Date().getTime();
+
+				async.series( {
+					download: function( callback ) {
+						if ( typeof $scope.latestRelease !== "object" || !$scope.latestRelease.name ) {
+							file = fs.readdirSync( "firmwares/" + deviceList[type] ).sort( sortFirmwares )[0];
+
+							if ( !file ) {
+								callback( null, false );
+								return;
+							}
+						} else {
+							$scope.button.text = "Downloading latest firmware...";
+							file = $scope.latestRelease.name + ".hex";
+							downloadFirmware( type, $scope.latestRelease.name, callback );
+						}
+					},
+					status: function( callback ) {
+						var command = commandPrefix[platform] +
+								( deviceList[type].usePort && port ? "-P " + port + " " : "" ) +
+								deviceList[type].command + " -q -F -U flash:w:" + "firmwares/" + deviceList[type] + "/" + file;
+
+						$scope.button.text = "Updating OpenSprinkler " + type + " firmware...";
+						$scope.$apply();
+
+						exec( command, function( error, stdout, stderr ) {
+							stdout = stdout || stderr;
+
+							var result = stdout.indexOf( "verified" ) === -1 ? false : true;
+
+							callback( null, result );
+
+							console.log( "OpenSprinkler " + type + " upgrade " + ( result ? "succeeded" : "failed" ) );
+						} );
+					}
+				}, function( err, results ) {
+					if ( results.status ) {
+						$ionicPopup.alert( {
+							title: "Upgrade OpenSprinkler " + type,
+							template: "<p class='center'>The firmware update was successful and the device is rebooting and will be restored to factory settings.</p>"
+						} );
+					} else {
+						$ionicPopup.alert( {
+							title: "Upgrade OpenSprinkler " + type,
+							template: "<p class='center'>The firmware update was <strong>NOT</strong> successful.<br><br>" +
+							"Please review the log output for suggestions or <a target='_blank' href='https://support.opensprinkler.com'>contact support</a> if you continue to have problems.</p>"
+						} );
+					}
+
+					cleanUp();
+				} );
+			},
 			cleanUp = function() {
-				if ( new Date().getTime() - startTime < 800 ) {
+				if ( ( new Date().getTime() - startTime ) < 800 ) {
 					setTimeout( cleanUp, 800 );
 					return;
 				}
 				$scope.button.text = "Check for new devices";
 				$scope.button.disabled = false;
 				$scope.$apply();
-			};
+			},
+			file, start;
 
-		$scope.button.disabled = true;
-
-		if ( typeof $scope.latestRelease !== "object" || !$scope.latestRelease.name ) {
-			var available = fs.readdirSync( "firmwares/" + deviceList[type] ).sort( sortFirmwares );
-		} else {
-			$scope.button.text = "Downloading latest firmware...";
-
-			async.series( {
-				download: function( callback ) {
-					downloadFirmware( type, $scope.latestRelease.name, callback );
-				},
-				status: function( callback ) {
-					var command = commandPrefix[platform] + ( deviceList[type].usePort && port ? "-P " + port + " " : "" ) + " -q -F -U flash:w:" + deviceList[type].command;
-
-					exec( command, function( error, stdout, stderr ) {
-						stdout = stdout || stderr;
-
-						var result = stdout.indexOf( "verified" ) === -1 ? false : true;
-
-						callback( null, result );
-
-						console.log( "OpenSprinkler " + type + " upgrade " + ( result ? "succeeded" : "failed" ) );
-					} );
-				}
-			}, function( err, results ) {
-				console.log( results );
-				cleanUp();
-			} );
-		}
+			areYouSure( $ionicPopup, "Upgrade OpenSprinkler " + type,
+				"<p class='center'>Please note the device will be restored to it's default settings during the update so please make sure you already have a backup." +
+				"<br><br>" +
+				"Are you sure you want to upgrade OpenSprinkler " + type + "?</p>", update );
 	};
 
 	// Github API to get releases for OpenSprinkler firmware
@@ -320,7 +351,19 @@ function sortFirmwares( a, b ) {
         return 1;
     }
     return 0;
-};
+}
+
+function areYouSure( $ionicPopup, title, message, callback ) {
+	var confirmPopup = $ionicPopup.confirm( {
+		title: title,
+		template: message
+	} );
+	confirmPopup.then( function( result ) {
+		if ( result ) {
+			callback();
+		}
+	} );
+}
 
 // Resolves the Month / Day / Year of a Date object
 function toUSDate( date ) {
