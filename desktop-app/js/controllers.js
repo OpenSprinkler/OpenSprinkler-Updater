@@ -71,160 +71,7 @@ angular.module( "os-updater.controllers", [] )
 		$scope.deviceList = [];
 
 		// Set the default state to no devices found
-		var deviceFound = false,
-
-			// Set the scan start time, if the scan is too quick we will artificially delay
-			// it to avoid visual glitch like appearance
-			startTime = new Date().getTime(),
-
-			// Define the actual scan subroutine which runs after all serial ports are scanned
-			scan = function() {
-
-				// TODO: The scan needs to take into account the specific ports of each device detected so multiple
-				// devices can truly be successfully updated while connected at the same time.
-
-				// Parse each device possible and check for there presence
-				async.forEachOfSeries( deviceList, function( device, key, callback ) {
-
-					//Generate regex to search for the device signature in the AVRDUDE output
-					var regex = new RegExp( device.id, "g" ),
-
-						// Generate command to probe for device version
-						command = commandPrefix[platform] + ( device.usePort && port ? "-P " + port + " " : "" ) + device.command;
-
-					// Continue to scan unless the device type specifically requests not to scan
-					if ( device.preventScan !== true ) {
-
-						// Execute the AVRDUDE command and parse the reply
-						exec( command, function( error, stdout, stderr ) {
-							stdout = stdout || stderr;
-
-							console.log( "Command: " + command, device, stdout );
-
-							// Check the device signature against the associated ID
-							if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
-
-								console.log( "Found OpenSprinkler " + key );
-
-								// Push the device to the detected list
-								$scope.deviceList.push( {
-									type: key
-								} );
-							}
-
-							// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
-							setTimeout( callback, 200 );
-						} );
-					} else {
-
-						// Be sure to continue to the next device type if one is excluded from scan
-						callback();
-					}
-				}, function() {
-
-					// Restore button state
-					cleanUp();
-				} );
-			},
-			parseDevices = function( devices, ports ) {
-
-				// Handle reply after both commands have completed
-				var item, pid, vid, location, device;
-
-				// Parse every USB devices detected
-				for ( device in devices ) {
-					if ( devices.hasOwnProperty( device ) ) {
-
-						if ( platform === "osx" ) {
-
-							// Each reply is delimited by a colon and contains: PID::VID::Location
-							// Location coorelates with the serial port location and is used to confirm the association
-							item = devices[device].split( ":" );
-
-							pid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
-							if ( pid ) {
-								pid = pid[1].toLowerCase();
-							}
-
-							vid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
-							if ( vid ) {
-								vid = vid[1].toLowerCase();
-							}
-
-							location = item[2] ? item[2].split( "/" ) : "";
-							if ( location.length ) {
-								location = location[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
-								location = findPort( ports, location );
-							}
-
-						} else if ( platform === "linux" ) {
-
-							// The script returns each detected device is a double colon delimited value
-							// which is in the following format: Location::PID::VID
-							item = devices[device].split( "::" );
-							pid = item[1] ? item[1].toLowerCase() : "";
-							vid = item[2] ? item[2].toLowerCase() : "";
-							location = item[0];
-
-						} else if ( platform === "win" ) {
-
-							// The script returns each detected device is a comma delimited value
-							// which is in the following format: Platform,Device Name,Device PID/VID
-							item = devices[device].split( "," );
-
-							pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
-							if ( pid ) {
-								pid = pid[1].toLowerCase();
-							}
-
-							vid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
-							if ( vid ) {
-								vid = vid[1].toLowerCase();
-							}
-
-							location = item[1] ? item[1].match( /COM(\d+)/i ) : "";
-							if ( location ) {
-								location = location[0];
-							}
-						}
-
-						// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
-						if ( pid === "16c0" && item[1] === "05dc" ) {
-							console.log( "Found OpenSprinkler v2.1" );
-
-							$scope.deviceList.push( {
-								type: "v2.1"
-							} );
-						}
-
-						// Detected hardware v2.2 or v2.3 and coorelate the port value to the location
-						if ( pid === "1a86" && vid === "7523" ) {
-							port = location;
-							console.log( "Found a match at: " + port );
-
-						}
-					}
-				}
-
-				// Serial port scan is complete and device detection can start
-				scan();
-			},
-			cleanUp = function() {
-
-				// If the scan time was too short, delay it to avoid a glitch like appearance
-				if ( ( new Date().getTime() - startTime ) < 800 ) {
-					setTimeout( cleanUp, 500 );
-					return;
-				}
-
-				// Restore the buttons to their default state
-				$scope.button.text = "Check for new devices";
-				$scope.button.disabled = false;
-				$scope.$apply();
-			};
-
-		// TODO: The serial detection code was whipped up quickly and needs refactoring to avoid
-		// checking the same values three times.
+		var deviceFound = false;
 
 		// Begin scanning for available serial ports
 		if ( platform === "osx" ) {
@@ -250,18 +97,18 @@ angular.module( "os-updater.controllers", [] )
 					} );
 				}
 			}, function( err, data ) {
-				parseDevices( data.devices, data.ports );
+				parseDevices( data.devices, data.ports, scan );
 			} );
 		} else if ( platform === "linux" ) {
 
 			// Handle serial port scan for Linux platform by running shell script
 			// which parses the /sys/bus/usb/devices path for connected devices
 			exec( "./avr/serial.linux.sh", function( error, stdout ) {
-				parseDevices( stdout.split( "\n" ) );
+				parseDevices( stdout.split( "\n" ), null, scan );
 			} );
 		} else if ( platform === "win" ) {
 			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", function( error, stdout, stderr ) {
-				parseDevices( stdout.split( "\n" ) );
+				parseDevices( stdout.split( "\n" ), null, scan );
 			} );
 		}
 	};
@@ -276,9 +123,6 @@ angular.module( "os-updater.controllers", [] )
 				$scope.upgradeLog = "";
 				$scope.button.disabled = true;
 				$scope.button.text = "Updating OpenSprinkler " + type + "...";
-
-				// Define the start time of the update
-				startTime = new Date().getTime();
 
 				// Run the download process to first grab the required file then subsequently update the device
 				async.series( {
@@ -359,19 +203,6 @@ angular.module( "os-updater.controllers", [] )
 					// Clean up the page buttons after upgrade completion
 					cleanUp();
 				} );
-			},
-			cleanUp = function() {
-
-				// If the upgrade time was too quick, introduce a small delay for to prevent a flicker appearance
-				if ( ( new Date().getTime() - startTime ) < 800 ) {
-					setTimeout( cleanUp, 800 );
-					return;
-				}
-
-				// Restore buttons to their default state
-				$scope.button.text = "Check for new devices";
-				$scope.button.disabled = false;
-				$scope.$apply();
 			},
 			file, start;
 
@@ -463,44 +294,186 @@ angular.module( "os-updater.controllers", [] )
 			}
 		);
 	}
-} );
 
-// Takes a list of ports and looks for an associated location.
-// If a match is found, the corresponding port is returned otherwise false
-function findPort( ports, location ) {
-	var port;
+	// Define the actual scan subroutine which runs after all serial ports are scanned
+	function scan() {
 
-	for ( port in ports ) {
-		if ( ports.hasOwnProperty( port ) ) {
-			if ( ports[port].indexOf( location ) !== -1 ) {
-				return ports[port];
+		// TODO: The scan needs to take into account the specific ports of each device detected so multiple
+		// devices can truly be successfully updated while connected at the same time.
+
+		// Parse each device possible and check for there presence
+		async.forEachOfSeries( deviceList, function( device, key, callback ) {
+
+			//Generate regex to search for the device signature in the AVRDUDE output
+			var regex = new RegExp( device.id, "g" ),
+
+				// Generate command to probe for device version
+				command = commandPrefix[platform] + ( device.usePort && port ? "-P " + port + " " : "" ) + device.command;
+
+			// Continue to scan unless the device type specifically requests not to scan
+			if ( device.preventScan !== true ) {
+
+				// Execute the AVRDUDE command and parse the reply
+				exec( command, function( error, stdout, stderr ) {
+					stdout = stdout || stderr;
+
+					console.log( "Command: " + command, device, stdout );
+
+					// Check the device signature against the associated ID
+					if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
+
+						console.log( "Found OpenSprinkler " + key );
+
+						// Push the device to the detected list
+						$scope.deviceList.push( {
+							type: key
+						} );
+					}
+
+					// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
+					setTimeout( callback, 200 );
+				} );
+			} else {
+
+				// Be sure to continue to the next device type if one is excluded from scan
+				callback();
+			}
+		}, function() {
+
+			// Restore button state
+			cleanUp();
+		} );
+	};
+
+	function parseDevices( devices, ports, callback ) {
+
+		// Handle reply after both commands have completed
+		var item, pid, vid, location, device;
+
+		// Parse every USB devices detected
+		for ( device in devices ) {
+			if ( devices.hasOwnProperty( device ) ) {
+
+				if ( platform === "osx" ) {
+
+					// Each reply is delimited by a colon and contains: PID::VID::Location
+					// Location coorelates with the serial port location and is used to confirm the association
+					item = devices[device].split( ":" );
+
+					pid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
+					if ( pid ) {
+						pid = pid[1].toLowerCase();
+					}
+
+					vid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
+					if ( vid ) {
+						vid = vid[1].toLowerCase();
+					}
+
+					location = item[2] ? item[2].split( "/" ) : "";
+					if ( location.length ) {
+						location = location[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+						location = findPort( ports, location );
+					}
+
+				} else if ( platform === "linux" ) {
+
+					// The script returns each detected device is a double colon delimited value
+					// which is in the following format: Location::PID::VID
+					item = devices[device].split( "::" );
+					pid = item[1] ? item[1].toLowerCase() : "";
+					vid = item[2] ? item[2].toLowerCase() : "";
+					location = item[0];
+
+				} else if ( platform === "win" ) {
+
+					// The script returns each detected device is a comma delimited value
+					// which is in the following format: Platform,Device Name,Device PID/VID
+					item = devices[device].split( "," );
+
+					pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
+					if ( pid ) {
+						pid = pid[1].toLowerCase();
+					}
+
+					vid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
+					if ( vid ) {
+						vid = vid[1].toLowerCase();
+					}
+
+					location = item[1] ? item[1].match( /COM(\d+)/i ) : "";
+					if ( location ) {
+						location = location[0];
+					}
+				}
+
+				// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
+				if ( pid === "16c0" && item[1] === "05dc" ) {
+					console.log( "Found OpenSprinkler v2.1" );
+
+					$scope.deviceList.push( {
+						type: "v2.1"
+					} );
+				}
+
+				// Detected hardware v2.2 or v2.3 and coorelate the port value to the location
+				if ( pid === "1a86" && vid === "7523" ) {
+					port = location;
+					console.log( "Found a match at: " + port );
+
+				}
 			}
 		}
+
+		callback();
+	};
+
+	function cleanUp() {
+		setTimeout( function() {
+			// Restore the buttons to their default state
+			$scope.button.text = "Check for new devices";
+			$scope.button.disabled = false;
+			$scope.$apply();
+		}, 500 );
 	}
 
-	return false;
-}
+	// Takes a list of ports and looks for an associated location.
+	// If a match is found, the corresponding port is returned otherwise false
+	function findPort( ports, location ) {
+		var port;
 
-// Sorts firmware versions in a string format such as: 2.1.5.hex by collapsing
-// the numbers into an integer and comparing them
-function sortFirmwares( a, b ) {
+		for ( port in ports ) {
+			if ( ports.hasOwnProperty( port ) ) {
+				if ( ports[port].indexOf( location ) !== -1 ) {
+					return ports[port];
+				}
+			}
+		}
 
-	// Filter that matches version numbers that are decimal delimited, eg: 2.1.5
-	var filter = /\d\.\d\.\d/g;
+		return false;
+	}
 
-    a = parseInt( a.match( filter )[0].replace( /\./g, "" ) );
-    b = parseInt( b.match( filter )[0].replace( /\./g, "" ) );
-    console.log( a, b );
-    if ( a < b ) {
-        return -1;
-    }
-    if ( a > b ) {
-        return 1;
-    }
-    return 0;
-}
+	// Sorts firmware versions in a string format such as: 2.1.5.hex by collapsing
+	// the numbers into an integer and comparing them
+	function sortFirmwares( a, b ) {
 
-// Resolves the Month / Day / Year of a Date object
-function toUSDate( date ) {
-	return ( date.getMonth() + 1 ) + "/" + date.getDate() + "/" + date.getFullYear();
-}
+		// Filter that matches version numbers that are decimal delimited, eg: 2.1.5
+		var filter = /\d\.\d\.\d/g;
+
+	    a = parseInt( a.match( filter )[0].replace( /\./g, "" ) );
+	    b = parseInt( b.match( filter )[0].replace( /\./g, "" ) );
+	    console.log( a, b );
+	    if ( a < b ) {
+	        return -1;
+	    }
+	    if ( a > b ) {
+	        return 1;
+	    }
+	    return 0;
+	}
+
+	// Resolves the Month / Day / Year of a Date object
+	function toUSDate( date ) {
+		return ( date.getMonth() + 1 ) + "/" + date.getDate() + "/" + date.getFullYear();
+	}
+} );
