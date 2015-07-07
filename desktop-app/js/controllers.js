@@ -1,6 +1,15 @@
 var exec = require( "child_process" ).exec,
 	async = require( "async" ),
-	fs = require( "fs" );
+	fs = require( "fs" ),
+
+	// Define Github directory to use for firmware download
+	githubFW = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/master/compiled-fw/",
+
+	// Github API endpoint to request available firmware versions
+	githubAPI = "https://api.github.com/repositories/38519612/contents/compiled-fw/",
+
+	// Define regex to match dot seperated release name, eg: 2.1.5
+	releaseNameFilter = /\d\.\d\.\d/g;
 
 angular.module( "os-updater.controllers", [] )
 
@@ -278,12 +287,40 @@ angular.module( "os-updater.controllers", [] )
 		$scope.checkDevices();
 	}
 
+	// Method to query Github for all available firmware versions for a particular device type
+	function getAvailableFirmwares( device, callback ) {
+		var fileList = [];
+
+		// Download the firmware
+		$http.get( githubAPI + device ).then(
+			function( files ) {
+				var name;
+
+				for ( file in files.data ) {
+					if ( files.data.hasOwnProperty( file ) ) {
+						name = files.data[file].name.match( releaseNameFilter );
+
+						if ( name && files.data[file].type === "file" ) {
+							fileList.push( name[0] );
+						}
+					}
+				}
+
+				callback( fileList );
+			},
+			function() {
+				callback( false );
+			}
+		);
+
+	}
+
 	// Method to download a firmware based on the device and version.
 	// A callback is called once the download is completed indicated success or failure
 	function downloadFirmware( device, version, callback ) {
 
 		// The default URL to grab compiled firmware will be the Github repository
-		var url = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/master/compiled-fw/" + device + "/firmware" + version + ".hex";
+		var url = github + device + "/firmware" + version + ".hex";
 
 		// If the directory for the hardware type doesn't exist then create it
 		if ( !fs.existsSync( cwd + "/firmwares" ) ) {
@@ -497,10 +534,8 @@ angular.module( "os-updater.controllers", [] )
 	function sortFirmwares( a, b ) {
 
 		// Filter that matches version numbers that are decimal delimited, eg: 2.1.5
-		var filter = /\d\.\d\.\d/g;
-
-	    a = parseInt( a.match( filter )[0].replace( /\./g, "" ) );
-	    b = parseInt( b.match( filter )[0].replace( /\./g, "" ) );
+	    a = parseInt( a.match( releaseNameFilter )[0].replace( /\./g, "" ) );
+	    b = parseInt( b.match( releaseNameFilter )[0].replace( /\./g, "" ) );
 	    console.log( a, b );
 	    if ( a < b ) {
 	        return -1;
