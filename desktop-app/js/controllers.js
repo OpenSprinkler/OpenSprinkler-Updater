@@ -130,7 +130,7 @@ angular.module( "os-updater.controllers", [] )
 	$scope.updateAction = function( type ) {
 
 		// Define the actual update subroutine which will run after the confirmation to continue
-		var update = function() {
+		var update = function( version ) {
 
 				// Disable the page buttons and update the status text
 				$scope.upgradeLog = "";
@@ -141,22 +141,9 @@ angular.module( "os-updater.controllers", [] )
 				async.series( {
 					download: function( callback ) {
 
-						// If the latest device is not detected then the Github API is not working or there is not network
-						// Fallback to detecting if the files are present locally and use that
-						if ( typeof $scope.latestRelease !== "object" || !$scope.latestRelease.name ) {
-							file = fs.readdirSync( cwd + "/firmwares/" + deviceList[type] ).sort( sortFirmwares )[0];
-
-							if ( !file ) {
-
-								// If no files are found proceed to the next step but indicate failure
-								callback( null, false );
-								return;
-							}
-						} else {
-							$scope.button.text = "Downloading latest firmware...";
-							file = $scope.latestRelease.name + ".hex";
-							downloadFirmware( type, $scope.latestRelease.name, callback );
-						}
+						$scope.button.text = "Downloading firmware " + version + "...";
+						file = version + ".hex";
+						downloadFirmware( type, version, callback );
 					},
 					status: function( callback ) {
 						if ( !file ) {
@@ -217,19 +204,46 @@ angular.module( "os-updater.controllers", [] )
 					cleanUp();
 				} );
 			},
+			confirmUpdate = function( versions ) {
+
+				// Ensure the user intended to proceed with the firmware upgrade which will erase current settings on the device
+				confirmPopup = $ionicPopup.confirm( {
+					title: "Upgrade OpenSprinkler " + type,
+					scope: $scope,
+					template: "<div class='center'>Please note the device will be restored to it's default settings during the update so please make sure you already have a backup.<br><br>" +
+						"<div class='list' style='padding-bottom:10px'>" +
+							"<label class='item item-input item-select'>" +
+								"<div class='input-label'>" +
+									"Firmware" +
+								"</div>" +
+								"<select ng-init='selectedFirmware = latestRelease.name' ng-model='selectedFirmware' ng-change='changeFirmwareSelection(selectedFirmware)'>" + versions + "</select>" +
+							"</label>" +
+						"</div>" +
+						"Are you sure you want to upgrade OpenSprinkler " + type + "?</div>"
+				} ).then( function( result ) {
+					if ( result ) {
+						update( $scope.selectedFirmware );
+					}
+				} );
+			},
 			file, start;
 
-			// Ensure the user intended to proceed with the firmware upgrade which will erase current settings on the device
-			confirmPopup = $ionicPopup.confirm( {
-				title: "Upgrade OpenSprinkler " + type,
-				template: "<p class='center'>Please note the device will be restored to it's default settings during the update so please make sure you already have a backup." +
-					"<br><br>" +
-					"Are you sure you want to upgrade OpenSprinkler " + type + " to firmware?</p>"
-			} ).then( function( result ) {
-				if ( result ) {
-					update();
+		getAvailableFirmwares( type, function( versions ) {
+			var html = "";
+
+			for ( version in versions ) {
+				if ( versions.hasOwnProperty( version ) ) {
+					html += "<option " + ( versions[version].isLatest ? "selected='selected' " : "" ) +
+						"value='" + versions[version].version + "'>" + versions[version].version + ( versions[version].isLatest ? " (Latest)" : "" ) + "</option>";
 				}
-			} );
+			}
+
+			confirmUpdate( html );
+		} );
+	};
+
+	$scope.changeFirmwareSelection = function( now ) {
+		$scope.selectedFirmware = now;
 	};
 
 	// Method to show the change log in a popup to the user
@@ -242,12 +256,11 @@ angular.module( "os-updater.controllers", [] )
 	};
 
 	// Github API to get releases for OpenSprinkler firmware
-	$http.get( "https://api.github.com/repos/opensprinkler/opensprinkler-firmware/releases" ).success( function( releases ) {
+	$http.get( "https://api.github.com/repos/opensprinkler/opensprinkler-firmware/releases" ).then( function( releases ) {
 
 		var line;
 
-		// Save all the releases to the allReleases scope for later parsing of older firmware versions (for downgrading)
-		$scope.allReleases = releases;
+		releases = releases.data;
 
 		// Set up the default object for the latest release
 		$scope.latestRelease = {};
@@ -274,7 +287,7 @@ angular.module( "os-updater.controllers", [] )
 		// Collapse the array of lines to a single string
 		$scope.latestRelease.changeLog = changeLog.join( "" );
 
-	} );
+	}, networkFail );
 
 	// When the page is loaded, start a scan for connected devices
 	if ( platform === "linux" ) {
@@ -301,18 +314,16 @@ angular.module( "os-updater.controllers", [] )
 						name = files.data[file].name.match( releaseNameFilter );
 
 						if ( name && files.data[file].type === "file" ) {
-							fileList.push( name[0] );
+							fileList.push( {
+								version: name[0],
+								isLatest: name[0] === $scope.latestRelease.name
+							} );
 						}
 					}
 				}
 
-				callback( fileList );
-			},
-			function() {
-				callback( false );
-			}
-		);
-
+				callback( fileList.reverse() );
+			}, networkFail );
 	}
 
 	// Method to download a firmware based on the device and version.
@@ -320,7 +331,7 @@ angular.module( "os-updater.controllers", [] )
 	function downloadFirmware( device, version, callback ) {
 
 		// The default URL to grab compiled firmware will be the Github repository
-		var url = github + device + "/firmware" + version + ".hex";
+		var url = githubFW + device + "/firmware" + version + ".hex";
 
 		// If the directory for the hardware type doesn't exist then create it
 		if ( !fs.existsSync( cwd + "/firmwares" ) ) {
@@ -342,7 +353,7 @@ angular.module( "os-updater.controllers", [] )
 			function( err ) {
 
 				// Do nothing if download failed
-				callback();
+				networkFail();
 				console.log( "Downloaded failed for firmware " + version + " for OpenSprinkler " + version );
 			}
 		);
@@ -511,6 +522,10 @@ angular.module( "os-updater.controllers", [] )
 			$scope.button.disabled = false;
 			$scope.$apply();
 		}, 500 );
+	}
+
+	function networkFail() {
+		console.log( "Network failure..." );
 	}
 
 	// Takes a list of ports and looks for an associated location.
