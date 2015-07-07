@@ -44,7 +44,10 @@ angular.module( "os-updater.controllers", [] )
 		},
 
 		// Default platform is Linux unless otherwise detected below
-		platform = "linux";
+		platform = "linux",
+
+		// Define variable to be used for the identified port
+		port;
 
 	if ( /^win/.test( process.platform ) ) {
 
@@ -135,8 +138,7 @@ angular.module( "os-updater.controllers", [] )
 				$scope.button.text = "Check for new devices";
 				$scope.button.disabled = false;
 				$scope.$apply();
-			},
-			port;
+			};
 
 		// TODO: The serial detection code was whipped up quickly and needs refactoring to avoid
 		// checking the same values three times.
@@ -486,7 +488,7 @@ angular.module( "os-updater.controllers", [] )
 			}
 		);
 	}
-} )
+} );
 
 // Takes a list of ports and looks for an associated location.
 // If a match is found, the corresponding port is returned otherwise false
