@@ -46,6 +46,9 @@ angular.module( "os-updater.controllers", [] )
 		// Default platform is Linux unless otherwise detected below
 		platform = "linux",
 
+		// Flag to determine if the USB device is plugged in without drivers being installed
+		is20Connected = false,
+
 		// Define variable to be used for the identified port
 		port;
 
@@ -340,6 +343,14 @@ angular.module( "os-updater.controllers", [] )
 			}
 		}, function() {
 
+			if ( is20Connected && !$scope.deviceList.length ) {
+				$ionicPopup.alert( {
+					title: "OpenSprinkler v2.0 Drivers",
+					template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
+						"You may install them by following this link: <a target='_blank' href='http://zadig.akeo.ie/'>http://zadig.akeo.ie/</a>.</p>"
+				} );
+			}
+
 			// Restore button state
 			cleanUp();
 		} );
@@ -349,6 +360,9 @@ angular.module( "os-updater.controllers", [] )
 
 		// Handle reply after both commands have completed
 		var item, pid, vid, location, device;
+
+		// Reset v2.0 detection flag
+		is20Connected = false;
 
 		// Parse every USB devices detected
 		for ( device in devices ) {
@@ -390,7 +404,6 @@ angular.module( "os-updater.controllers", [] )
 					// The script returns each detected device is a comma delimited value
 					// which is in the following format: Platform,Device Name,Device PID/VID
 					item = devices[device].split( "," );
-
 					pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
 					if ( pid ) {
 						pid = pid[1].toLowerCase();
@@ -407,8 +420,15 @@ angular.module( "os-updater.controllers", [] )
 					}
 				}
 
+				// Match OpenSprinkler v2.0 PID and VID and flag it for missing driver if no response from AVRDUDE
+				if ( pid === "0c9f" && vid === "1781" ) {
+					console.log( "Found OpenSprinkler v2.0" );
+
+					is20Connected = true;
+				}
+
 				// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
-				if ( pid === "16c0" && item[1] === "05dc" ) {
+				if ( pid === "16c0" && vid === "05dc" ) {
 					console.log( "Found OpenSprinkler v2.1" );
 
 					$scope.deviceList.push( {
