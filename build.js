@@ -8,7 +8,7 @@ var NwBuilder = require( "node-webkit-builder" ),
 
 var nw = new NwBuilder( {
   files: "desktop-app/**",
-  platforms: [ "osx", "win", "linux" ],
+  platforms: [ "osx32", "win32", "linux" ],
   appName: appName,
   appVersion: appPkg.version,
   winIco: "assets/win.ico",
@@ -58,7 +58,7 @@ function createDMG() {
 
   var appdmg = require( "appdmg" ),
     ee = appdmg( {
-    source: "assets/dmg.json",
+    source: "./assets/dmg.json",
     target: "./build/" + appName + "/OpenSprinkler-FW-Updater.dmg"
   } );
 

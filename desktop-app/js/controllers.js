@@ -126,6 +126,89 @@ angular.module( "os-updater.controllers", [] )
 					cleanUp();
 				} );
 			},
+			parseDevices = function( devices, ports ) {
+
+				// Handle reply after both commands have completed
+				var item, pid, vid, location, device;
+
+				// Parse every USB devices detected
+				for ( device in devices ) {
+					if ( devices.hasOwnProperty( device ) ) {
+
+						if ( platform === "osx" ) {
+
+							// Each reply is delimited by a colon and contains: PID::VID::Location
+							// Location coorelates with the serial port location and is used to confirm the association
+							item = devices[device].split( ":" );
+
+							pid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
+							if ( pid ) {
+								pid = pid[1].toLowerCase();
+							}
+
+							vid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
+							if ( vid ) {
+								vid = vid[1].toLowerCase();
+							}
+
+							location = item[2] ? item[2].split( "/" ) : "";
+							if ( location.length ) {
+								location = location[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+								location = findPort( ports, location );
+							}
+
+						} else if ( platform === "linux" ) {
+
+							// The script returns each detected device is a double colon delimited value
+							// which is in the following format: Location::PID::VID
+							item = devices[device].split( "::" );
+							pid = item[1] ? item[1].toLowerCase() : "";
+							vid = item[2] ? item[2].toLowerCase() : "";
+							location = item[0];
+
+						} else if ( platform === "win" ) {
+
+							// The script returns each detected device is a comma delimited value
+							// which is in the following format: Platform,Device Name,Device PID/VID
+							item = devices[device].split( "," );
+
+							pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
+							if ( pid ) {
+								pid = pid[1].toLowerCase();
+							}
+
+							vid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
+							if ( vid ) {
+								vid = vid[1].toLowerCase();
+							}
+
+							location = item[1] ? item[1].match( /COM(\d+)/i ) : "";
+							if ( location ) {
+								location = location[0];
+							}
+						}
+
+						// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
+						if ( pid === "16c0" && item[1] === "05dc" ) {
+							console.log( "Found OpenSprinkler v2.1" );
+
+							$scope.deviceList.push( {
+								type: "v2.1"
+							} );
+						}
+
+						// Detected hardware v2.2 or v2.3 and coorelate the port value to the location
+						if ( pid === "1a86" && vid === "7523" ) {
+							port = location;
+							console.log( "Found a match at: " + port );
+
+						}
+					}
+				}
+
+				// Serial port scan is complete and device detection can start
+				scan();
+			},
 			cleanUp = function() {
 
 				// If the scan time was too short, delay it to avoid a glitch like appearance
@@ -167,126 +250,18 @@ angular.module( "os-updater.controllers", [] )
 					} );
 				}
 			}, function( err, data ) {
-
-				// Handle reply after both commands have completed
-				var item, location, device;
-
-				// Parse every USB devices detected
-				for ( device in data.devices ) {
-					if ( data.devices.hasOwnProperty( device ) ) {
-
-						// Each reply is delimited by a colon and contains: PID::VID::Location
-						// Location coorelates with the serial port location and is used to confirm the association
-						item = data.devices[device].split( ":" );
-
-						// If the list does not contain the required elements then continue
-						if ( item.length < 2 ) {
-							continue;
-						}
-
-						// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
-						if ( item[0] === "0x16c0" && item[1] === "0x05dc" ) {
-							console.log( "Found OpenSprinkler v2.1" );
-
-							$scope.deviceList.push( {
-								type: "v2.1"
-							} );
-						}
-
-						// Detected hardware v2.2 or v2.3 and coorelate the port value to the location
-						if ( item[0] === "0x1a86" && item[1] === "0x7523" ) {
-							location = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
-							port = findPort( data.ports, location );
-
-							console.log( "Found a match at: " + port );
-
-						}
-					}
-				}
-
-				// Serial port scan is complete and device detection can start
-				scan();
+				parseDevices( data.devices, data.ports );
 			} );
 		} else if ( platform === "linux" ) {
 
 			// Handle serial port scan for Linux platform by running shell script
 			// which parses the /sys/bus/usb/devices path for connected devices
-			exec( "./avr/serial.linux.sh", function( error, stdout, stderr ) {
-				var data = stdout.split( "\n" ),
-					item;
-
-				// For each device detected parse the result
-				for ( item in data ) {
-					if ( data.hasOwnProperty( item ) ) {
-
-						// The script returns each detected device is a double colon delimited value
-						// which is in the following format: Location::PID::VID
-						item = data[item].split( "::" );
-
-						// If the item doesn't meet the required element number then continue
-						if ( item.length < 3 ) {
-							continue;
-						}
-
-						// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
-						if ( item[1] === "16c0" && item[2] === "05dc" ) {
-							console.log( "Found OpenSprinkler v2.1" );
-
-							$scope.deviceList.push( {
-								type: "v2.1"
-							} );
-						}
-
-						// Detected hardware v2.2 or v2.3 and coorelate the port value to the location
-						if ( item[1] === "1a86" && item[2] === "7523" ) {
-							port = item[0];
-
-							console.log( "Found a match at: " + port );
-						}
-					}
-				}
-
-				// Serial port scan is complete and device detection can start
-				scan();
+			exec( "./avr/serial.linux.sh", function( error, stdout ) {
+				parseDevices( stdout.split( "\n" ) );
 			} );
 		} else if ( platform === "win" ) {
 			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", function( error, stdout, stderr ) {
-				var data = stdout.split( "\n" ),
-					item;
-
-				for ( item in data ) {
-					if ( data.hasOwnProperty( item ) ) {
-
-						// The script returns each detected device is a comma delimited value
-						// which is in the following format: Platform,Device Name,Device PID/VID
-						item = data[item].split( "," );
-
-						// If the item doesn't meet the required element number then continue
-						if ( item.length < 3 ) {
-							continue;
-						}
-
-						// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
-						if ( /VID_16C0/g.test( item[2] ) && /PID_05DC/g.test( item[2] ) ) {
-							console.log( "Found OpenSprinkler v2.1" );
-
-							$scope.deviceList.push( {
-								type: "v2.1"
-							} );
-						}
-
-						// Detected hardware v2.2 or v2.3 and coorelate the port value to the location
-						if ( /VID_1A86/g.test( item[2] ) && /PID_7523/g.test( item[2] ) ) {
-							port = item[1].match( /COM(\d+)/i );
-							port = port.length ? port[0] : undefined;
-
-							console.log( "Found a match at: " + port );
-						}
-					}
-				}
-
-				// Serial port scan is complete and device detection can start
-				scan();
+				parseDevices( stdout.split( "\n" ) );
 			} );
 		}
 	};
