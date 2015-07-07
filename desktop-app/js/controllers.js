@@ -430,6 +430,7 @@ angular.module( "os-updater.controllers", [] )
 
 	function cleanUp() {
 		setTimeout( function() {
+
 			// Restore the buttons to their default state
 			$scope.button.text = "Check for new devices";
 			$scope.button.disabled = false;
