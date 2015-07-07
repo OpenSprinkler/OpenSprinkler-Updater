@@ -6,13 +6,14 @@ angular.module( "os-updater.controllers", [] )
 
 .controller( "HomeCtrl", function( $scope, $ionicPopup, $http ) {
 
-	var arch = process.arch === "x64" ? "64" : "32",
+	var cwd = process.cwd(),
+		arch = process.arch === "x64" ? "64" : "32",
 
 		// Defines the base command to AVRDUDE per platform
 		commandPrefix = {
-			win: process.cwd() + "\\avr\\win\\avrdude.exe -C " + process.cwd() + "\\avr\\win\\avrdude.conf ",
-			osx: "avr/osx/avrdude -C avr/osx/avrdude.conf ",
-			linux: "./avr/linux" + arch + "/avrdude -C ./avr/linux" + arch + "/avrdude.conf "
+			win: cwd + "\\avr\\win\\avrdude.exe -C " + cwd + "\\avr\\win\\avrdude.conf ",
+			osx: cwd + "/avr/osx/avrdude -C " + cwd + "/avr/osx/avrdude.conf ",
+			linux: cwd + "/avr/linux" + arch + "/avrdude -C " + cwd + "/avr/linux" + arch + "/avrdude.conf "
 		},
 
 		// Defines the available devices, their CPU signature and base command
@@ -267,7 +268,15 @@ angular.module( "os-updater.controllers", [] )
 	} );
 
 	// When the page is loaded, start a scan for connected devices
-	$scope.checkDevices();
+	if ( platform === "linux" ) {
+
+		var command = "chmod a+x " + cwd + "/avr/linux" + arch + "/avrdude " + cwd + "/avr/serial.linux.sh";
+
+		// If the platform is Linux, set AVRDUDE permissions to executable
+		exec( command, $scope.checkDevices );
+	} else {
+		$scope.checkDevices();
+	}
 
 	// Method to download a firmware based on the device and version.
 	// A callback is called once the download is completed indicated success or failure
