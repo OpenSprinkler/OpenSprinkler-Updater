@@ -85,7 +85,7 @@ angular.module( "os-updater.controllers", [] )
 
 				// The first command will list all Call-Up serial ports
 				ports: function( callback ) {
-					exec( "ls /dev/cu.*", function( error, stdout, stderr ) {
+					exec( "ls /dev/cu.*", { timeout: 1000 }, function( error, stdout, stderr ) {
 
 						// Return the list delimited by line return
 						callback( null, stdout.split( "\n" ) );
@@ -94,7 +94,7 @@ angular.module( "os-updater.controllers", [] )
 
 				// The second command requests the USB informatin from system_profiler (command in bash script)
 				devices: function( callback ) {
-					exec( "avr/serial.osx.sh", function( error, stdout, stderr ) {
+					exec( "avr/serial.osx.sh", { timeout: 1000 }, function( error, stdout, stderr ) {
 
 						// Return the list delimited by line return
 						callback( null, stdout.split( "\n" ) );
@@ -107,11 +107,11 @@ angular.module( "os-updater.controllers", [] )
 
 			// Handle serial port scan for Linux platform by running shell script
 			// which parses the /sys/bus/usb/devices path for connected devices
-			exec( "./avr/serial.linux.sh", function( error, stdout ) {
+			exec( "./avr/serial.linux.sh", { timeout: 1000 }, function( error, stdout ) {
 				parseDevices( stdout.split( "\n" ), null, scan );
 			} );
 		} else if ( platform === "win" ) {
-			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", function( error, stdout, stderr ) {
+			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", { timeout: 1000 }, function( error, stdout, stderr ) {
 				parseDevices( stdout.split( "\n" ), null, scan );
 			} );
 		}
@@ -135,7 +135,7 @@ angular.module( "os-updater.controllers", [] )
 						// If the latest device is not detected then the Github API is not working or there is not network
 						// Fallback to detecting if the files are present locally and use that
 						if ( typeof $scope.latestRelease !== "object" || !$scope.latestRelease.name ) {
-							file = fs.readdirSync( "firmwares/" + deviceList[type] ).sort( sortFirmwares )[0];
+							file = fs.readdirSync( cwd + "/firmwares/" + deviceList[type] ).sort( sortFirmwares )[0];
 
 							if ( !file ) {
 
@@ -273,7 +273,7 @@ angular.module( "os-updater.controllers", [] )
 		var command = "chmod a+x " + cwd + "/avr/linux" + arch + "/avrdude " + cwd + "/avr/serial.linux.sh";
 
 		// If the platform is Linux, set AVRDUDE permissions to executable
-		exec( command, $scope.checkDevices );
+		exec( command, { timeout: 1000 }, $scope.checkDevices );
 	} else {
 		$scope.checkDevices();
 	}
@@ -286,8 +286,12 @@ angular.module( "os-updater.controllers", [] )
 		var url = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/master/compiled-fw/" + device + "/firmware" + version + ".hex";
 
 		// If the directory for the hardware type doesn't exist then create it
-		if ( !fs.existsSync( "firmwares/" + device ) ) {
-			fs.mkdirSync( "firmwares/" + device );
+		if ( !fs.existsSync( cwd + "/firmwares" ) ) {
+			fs.mkdirSync( cwd + "/firmwares" );
+		}
+
+		if ( !fs.existsSync( cwd + "/firmwares/" + device ) ) {
+			fs.mkdirSync( cwd + "/firmwares/" + device );
 		}
 
 		// Download the firmware
@@ -295,7 +299,7 @@ angular.module( "os-updater.controllers", [] )
 			function( response ) {
 
 				// If successful then save the file
-				fs.writeFile( "firmwares/" + device + "/" + version + ".hex", response.data, callback );
+				fs.writeFile( cwd + "/firmwares/" + device + "/" + version + ".hex", response.data, callback );
 				console.log( "Downloaded firmware " + version + " for OpenSprinkler " + version + " successfully!" );
 			},
 			function( err ) {
@@ -326,7 +330,7 @@ angular.module( "os-updater.controllers", [] )
 			if ( device.preventScan !== true ) {
 
 				// Execute the AVRDUDE command and parse the reply
-				exec( command, function( error, stdout, stderr ) {
+				exec( command, { timeout: 3000 }, function( error, stdout, stderr ) {
 					stdout = stdout || stderr;
 
 					console.log( "Command: " + command, device, stdout );
