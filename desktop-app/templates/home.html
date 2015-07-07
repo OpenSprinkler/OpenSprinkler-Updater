@@ -7,6 +7,8 @@
 
                 <div class="center">
 
+                    <ion-spinner ng-class="{ hidden: button.disabled === false || deviceList.length }"></ion-spinner>
+
                     <div ng-repeat="device in deviceList">
 
                         <div class="list left">
