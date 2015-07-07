@@ -331,6 +331,11 @@ angular.module( "os-updater.controllers", [] )
 						$scope.deviceList.push( {
 							type: key
 						} );
+					} else if ( stdout.indexOf( "Operation not permitted" ) !== -1 && platform === "linux" ) {
+						$ionicPopup.alert( {
+							title: "OpenSprinkler Updater Permissions",
+							template: "<p class='center'>USB access on Linux required root permissions. Please re-run the application using sudo.</p>"
+						} );
 					}
 
 					// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
