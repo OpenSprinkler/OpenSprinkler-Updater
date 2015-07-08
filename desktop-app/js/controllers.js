@@ -61,8 +61,7 @@ angular.module( "os-updater.controllers", [] )
 				filter = task.filter || device.id,
 
 				// Generate command to probe for device version
-				command = commandPrefix[platform] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command,
-				matchFound;
+				command = commandPrefix[platform] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command;
 
 			// Execute the AVRDUDE command and parse the reply
 			exec( command, { timeout: 3000 }, function( error, stdout, stderr ) {
@@ -70,19 +69,18 @@ angular.module( "os-updater.controllers", [] )
 
 				console.log( "Command: " + command, device, stdout );
 
-				matchFound = stdout.match( filter );
+				var matches = stdout.match( filter ),
+					matchFound;
 
 				// Check the device signature against the associated ID
-				if ( stdout.indexOf( "Device signature = " ) !== -1 && matchFound ) {
-
-					console.log( "Found OpenSprinkler " + task.type );
-
+				if ( stdout.indexOf( "Device signature = " ) !== -1 && matches ) {
+					matchFound = matches[0];
 				} else if ( stdout.indexOf( "Operation not permitted" ) !== -1 && platform === "linux" ) {
 					$ionicPopup.alert( {
 						title: "OpenSprinkler Updater Permissions",
 						template: "<p class='center'>USB access on Linux required root permissions. Please re-run the application using sudo.</p>"
 					} );
-				} else if ( task.type === "v2.0" && !matchFound ) {
+				} else if ( task.type === "v2.0" && !matchFound && platform === "win" ) {
 					$ionicPopup.alert( {
 						title: "OpenSprinkler v2.0 Drivers",
 						template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
@@ -254,7 +252,7 @@ angular.module( "os-updater.controllers", [] )
 								"<div class='input-label'>" +
 									"Firmware" +
 								"</div>" +
-								"<select ng-init='selectedFirmware = latestRelease.name' ng-model='selectedFirmware' ng-change='changeFirmwareSelection(selectedFirmware)'>" + versions + "</select>" +
+								"<select ng-init='fwv = \"" + ( $scope.selectedFirmware || $scope.latestRelease.name ) + "\"' ng-model='fwv' ng-change='changeFirmwareSelection(fwv)'>" + versions + "</select>" +
 							"</label>" +
 						"</div>" +
 						"Are you sure you want to upgrade OpenSprinkler " + type + "?</div>"
@@ -281,8 +279,8 @@ angular.module( "os-updater.controllers", [] )
 		} );
 	};
 
-	$scope.changeFirmwareSelection = function( now ) {
-		$scope.selectedFirmware = now;
+	$scope.changeFirmwareSelection = function( fwv ) {
+		$scope.selectedFirmware = fwv;
 	};
 
 	// Method to show the change log in a popup to the user
@@ -501,7 +499,7 @@ angular.module( "os-updater.controllers", [] )
 		}
 
 		// Get version from the returned device signature
-		var version = getMatchVersion( result[0] );
+		var version = getMatchVersion( result );
 
 		if ( version ) {
 
