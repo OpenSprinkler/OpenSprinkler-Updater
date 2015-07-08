@@ -78,13 +78,13 @@ angular.module( "os-updater.controllers", [] )
 				} else if ( stdout.indexOf( "Operation not permitted" ) !== -1 && platform === "linux" ) {
 					$ionicPopup.alert( {
 						title: "OpenSprinkler Updater Permissions",
-						template: "<p class='center'>USB access on Linux required root permissions. Please re-run the application using sudo.</p>"
+						template: "<p class='center'>USB access on Linux requires root permission. Please re-run the application using sudo.</p>"
 					} );
 				} else if ( task.type === "v2.0" && !matchFound && platform === "win" ) {
 					$ionicPopup.alert( {
 						title: "OpenSprinkler v2.0 Drivers",
 						template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
-							"You may install them by following this link: <a target='_blank' href='http://zadig.akeo.ie/'>http://zadig.akeo.ie/</a>.</p>"
+							"You may install them by following this link: <a target='_blank' href='http://zadig.akeo.ie/'>http://zadig.akeo.ie/</a> (choose libusb-win32).</p>"
 					} );
 				}
 
