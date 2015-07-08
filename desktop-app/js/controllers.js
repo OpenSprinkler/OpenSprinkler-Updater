@@ -405,6 +405,10 @@ angular.module( "os-updater.controllers", [] )
 
 		// Handle reply after both commands have completed
 		var usePortFilter = makeUsePortFilter(),
+
+			// Defines the total number of scans initiated
+
+			scanTotal = 0,
 			item, pid, vid, location, device;
 
 		// Parse every USB devices detected
@@ -414,7 +418,7 @@ angular.module( "os-updater.controllers", [] )
 				if ( platform === "osx" ) {
 
 					// Each reply is delimited by a colon and contains: PID::VID::Location
-					// Location coorelates with the serial port location and is used to confirm the association
+					// Location correlates with the serial port location and is used to confirm the association
 					item = devices[device].split( ":" );
 
 					pid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
@@ -438,8 +442,8 @@ angular.module( "os-updater.controllers", [] )
 					// The script returns each detected device is a double colon delimited value
 					// which is in the following format: Location::PID::VID
 					item = devices[device].split( "::" );
-					pid = item[1] ? item[1].toLowerCase() : "";
-					vid = item[2] ? item[2].toLowerCase() : "";
+					pid = item[2] ? item[2].toLowerCase() : "";
+					vid = item[1] ? item[1].toLowerCase() : "";
 					location = item[0];
 
 				} else if ( platform === "win" ) {
@@ -466,6 +470,7 @@ angular.module( "os-updater.controllers", [] )
 				// Match OpenSprinkler v2.0 PID and VID and flag it for missing driver if no response from AVRDUDE
 				if ( pid === "0c9f" && vid === "1781" ) {
 					scanQueue.push( { type: "v2.0" }, addDevice );
+					scanTotal++;
 				}
 
 				// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
@@ -482,8 +487,13 @@ angular.module( "os-updater.controllers", [] )
 					console.log( "Found a possible match located at: " + location );
 
 					scanQueue.push( { type: "v2.2", filter: usePortFilter, port: location }, addDevice );
+					scanTotal++;
 				}
 			}
+		}
+
+		if ( scanTotal === 0 ) {
+			cleanUp();
 		}
 	}
 
@@ -503,6 +513,8 @@ angular.module( "os-updater.controllers", [] )
 				type: version,
 				port: port
 			} );
+
+			console.log( "Found OpenSprinkler " + version + ( port ? " on port " + port : "" ) );
 		}
 	}
 
