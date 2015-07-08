@@ -416,12 +416,12 @@ angular.module( "os-updater.controllers", [] )
 					// Location correlates with the serial port location and is used to confirm the association
 					item = devices[device].split( ":" );
 
-					pid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
+					pid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
 					if ( pid ) {
 						pid = pid[1].toLowerCase();
 					}
 
-					vid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
+					vid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
 					if ( vid ) {
 						vid = vid[1].toLowerCase();
 					}
@@ -437,8 +437,8 @@ angular.module( "os-updater.controllers", [] )
 					// The script returns each detected device is a double colon delimited value
 					// which is in the following format: Location::PID::VID
 					item = devices[device].split( "::" );
-					pid = item[2] ? item[2].toLowerCase() : "";
-					vid = item[1] ? item[1].toLowerCase() : "";
+					pid = item[1] ? item[1].toLowerCase() : "";
+					vid = item[2] ? item[2].toLowerCase() : "";
 					port = item[0];
 
 				} else if ( platform === "win" ) {
@@ -463,7 +463,7 @@ angular.module( "os-updater.controllers", [] )
 				}
 
 				// Match OpenSprinkler v2.0 PID and VID and flag it for missing driver if no response from AVRDUDE
-				if ( pid === "0c9f" && vid === "1781" ) {
+				if ( vid === "0c9f" && pid === "1781" ) {
 					scanQueue.push( { type: "v2.0" }, addDevice );
 					scanTotal++;
 				}
