@@ -28,26 +28,22 @@ angular.module( "os-updater.controllers", [] )
 		// Defines the available devices, their CPU signature and base command
 		deviceList = {
 			"v2.0": {
-				id: "0x1e96",
+				id: /0x1e96/g,
 				command: "-c usbtiny -p m644 "
 			},
 			"v2.1": {
-				id: "0x1e96",
-				command: "-c usbasp -p m644 ",
-
-				// preventScan instruction because v2.1 requires a bootloader and the scan will
-				// remove it from bootloader so instead we make a positive ID based on the PID:VID
-				preventScan: true
+				id: /0x1e96/g,
+				command: "-c usbasp -p m644 "
 			},
 			"v2.2": {
-				id: "0x1e96",
+				id: /0x1e96/g,
 
 				// Indicates a serial port must be specified to interface with this device
 				usePort: true,
-				command: "-c arduino -p m644 -b 115200 "
+				command: "-c arduino -p m644p -b 115200 "
 			},
 			"v2.3": {
-				id: "0x1e97",
+				id: /0x1e97/g,
 				usePort: true,
 				command: "-c arduino -p m1284p -b 115200 "
 			}
@@ -56,11 +52,56 @@ angular.module( "os-updater.controllers", [] )
 		// Default platform is Linux unless otherwise detected below
 		platform = "linux",
 
-		// Flag to determine if the USB device is plugged in without drivers being installed
-		is20Connected = false,
-
 		// Define variable to be used for the identified port
-		port;
+		port,
+
+		// Define the actual scan subroutine which run for each possibly detected device
+		scanQueue = async.queue( function( task, callback ) {
+
+			var device = deviceList[task.type],
+
+				// Assign the signature filter to be used for scanning purposes
+				filter = task.filter || device.id,
+
+				// Generate command to probe for device version
+				command = commandPrefix[platform] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command,
+				matchFound;
+
+			// Execute the AVRDUDE command and parse the reply
+			exec( command, { timeout: 3000 }, function( error, stdout, stderr ) {
+				stdout = stdout || stderr;
+
+				console.log( "Command: " + command, device, stdout );
+
+				matchFound = stdout.match( filter );
+
+				// Check the device signature against the associated ID
+				if ( stdout.indexOf( "Device signature = " ) !== -1 && matchFound ) {
+
+					console.log( "Found OpenSprinkler " + task.type );
+
+				} else if ( stdout.indexOf( "Operation not permitted" ) !== -1 && platform === "linux" ) {
+					$ionicPopup.alert( {
+						title: "OpenSprinkler Updater Permissions",
+						template: "<p class='center'>USB access on Linux required root permissions. Please re-run the application using sudo.</p>"
+					} );
+				} else if ( task.type === "v2.0" && !matchFound ) {
+					$ionicPopup.alert( {
+						title: "OpenSprinkler v2.0 Drivers",
+						template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
+							"You may install them by following this link: <a target='_blank' href='http://zadig.akeo.ie/'>http://zadig.akeo.ie/</a>.</p>"
+					} );
+				}
+
+				// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
+				setTimeout( function() {
+					callback( matchFound, task.port );
+				}, 200 );
+			} );
+		} );
+
+	// Clean up the page after the scan queue is complete
+	scanQueue.drain = cleanUp;
 
 	if ( /^win/.test( process.platform ) ) {
 
@@ -110,18 +151,18 @@ angular.module( "os-updater.controllers", [] )
 					} );
 				}
 			}, function( err, data ) {
-				parseDevices( data.devices, data.ports, scan );
+				parseDevices( data.devices, data.ports );
 			} );
 		} else if ( platform === "linux" ) {
 
 			// Handle serial port scan for Linux platform by running shell script
 			// which parses the /sys/bus/usb/devices path for connected devices
 			exec( "./avr/serial.linux.sh", { timeout: 1000 }, function( error, stdout ) {
-				parseDevices( stdout.split( "\n" ), null, scan );
+				parseDevices( stdout.split( "\n" ), null );
 			} );
 		} else if ( platform === "win" ) {
 			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", { timeout: 1000 }, function( error, stdout, stderr ) {
-				parseDevices( stdout.split( "\n" ), null, scan );
+				parseDevices( stdout.split( "\n" ), null );
 			} );
 		}
 	};
@@ -229,7 +270,8 @@ angular.module( "os-updater.controllers", [] )
 			file, start;
 
 		getAvailableFirmwares( type, function( versions ) {
-			var html = "";
+			var html = "",
+				version;
 
 			for ( version in versions ) {
 				if ( versions.hasOwnProperty( version ) ) {
@@ -307,7 +349,7 @@ angular.module( "os-updater.controllers", [] )
 		// Download the firmware
 		$http.get( githubAPI + device ).then(
 			function( files ) {
-				var name;
+				var name, file;
 
 				for ( file in files.data ) {
 					if ( files.data.hasOwnProperty( file ) ) {
@@ -348,87 +390,22 @@ angular.module( "os-updater.controllers", [] )
 
 				// If successful then save the file
 				fs.writeFile( cwd + "/firmwares/" + device + "/" + version + ".hex", response.data, callback );
-				console.log( "Downloaded firmware " + version + " for OpenSprinkler " + version + " successfully!" );
+				console.log( "Downloaded firmware " + version + " for OpenSprinkler " + device + " successfully!" );
 			},
 			function( err ) {
 
 				// Do nothing if download failed
 				networkFail();
-				console.log( "Downloaded failed for firmware " + version + " for OpenSprinkler " + version );
+				console.log( "Downloaded failed for firmware " + version + " for OpenSprinkler " + device );
 			}
 		);
 	}
 
-	// Define the actual scan subroutine which runs after all serial ports are scanned
-	function scan() {
-
-		// TODO: The scan needs to take into account the specific ports of each device detected so multiple
-		// devices can truly be successfully updated while connected at the same time.
-
-		// Parse each device possible and check for there presence
-		async.forEachOfSeries( deviceList, function( device, key, callback ) {
-
-			//Generate regex to search for the device signature in the AVRDUDE output
-			var regex = new RegExp( device.id, "g" ),
-
-				// Generate command to probe for device version
-				command = commandPrefix[platform] + ( device.usePort && port ? "-P " + port + " " : "" ) + device.command;
-
-			// Continue to scan unless the device type specifically requests not to scan
-			if ( device.preventScan !== true ) {
-
-				// Execute the AVRDUDE command and parse the reply
-				exec( command, { timeout: 3000 }, function( error, stdout, stderr ) {
-					stdout = stdout || stderr;
-
-					console.log( "Command: " + command, device, stdout );
-
-					// Check the device signature against the associated ID
-					if ( stdout.indexOf( "Device signature = " ) !== -1 && regex.test( stdout ) ) {
-
-						console.log( "Found OpenSprinkler " + key );
-
-						// Push the device to the detected list
-						$scope.deviceList.push( {
-							type: key
-						} );
-					} else if ( stdout.indexOf( "Operation not permitted" ) !== -1 && platform === "linux" ) {
-						$ionicPopup.alert( {
-							title: "OpenSprinkler Updater Permissions",
-							template: "<p class='center'>USB access on Linux required root permissions. Please re-run the application using sudo.</p>"
-						} );
-					}
-
-					// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
-					setTimeout( callback, 200 );
-				} );
-			} else {
-
-				// Be sure to continue to the next device type if one is excluded from scan
-				callback();
-			}
-		}, function() {
-
-			if ( is20Connected && !$scope.deviceList.length ) {
-				$ionicPopup.alert( {
-					title: "OpenSprinkler v2.0 Drivers",
-					template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
-						"You may install them by following this link: <a target='_blank' href='http://zadig.akeo.ie/'>http://zadig.akeo.ie/</a>.</p>"
-				} );
-			}
-
-			// Restore button state
-			cleanUp();
-		} );
-	};
-
-	function parseDevices( devices, ports, callback ) {
+	function parseDevices( devices, ports ) {
 
 		// Handle reply after both commands have completed
-		var item, pid, vid, location, device;
-
-		// Reset v2.0 detection flag
-		is20Connected = false;
+		var usePortFilter = makeUsePortFilter(),
+			item, pid, vid, location, device;
 
 		// Parse every USB devices detected
 		for ( device in devices ) {
@@ -440,12 +417,12 @@ angular.module( "os-updater.controllers", [] )
 					// Location coorelates with the serial port location and is used to confirm the association
 					item = devices[device].split( ":" );
 
-					pid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
+					pid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
 					if ( pid ) {
 						pid = pid[1].toLowerCase();
 					}
 
-					vid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
+					vid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
 					if ( vid ) {
 						vid = vid[1].toLowerCase();
 					}
@@ -488,9 +465,7 @@ angular.module( "os-updater.controllers", [] )
 
 				// Match OpenSprinkler v2.0 PID and VID and flag it for missing driver if no response from AVRDUDE
 				if ( pid === "0c9f" && vid === "1781" ) {
-					console.log( "Found OpenSprinkler v2.0" );
-
-					is20Connected = true;
+					scanQueue.push( { type: "v2.0" }, addDevice );
 				}
 
 				// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
@@ -502,17 +477,60 @@ angular.module( "os-updater.controllers", [] )
 					} );
 				}
 
-				// Detected hardware v2.2 or v2.3 and coorelate the port value to the location
+				// Detected hardware v2.2 or v2.3 and correlate the port value to the location
 				if ( pid === "1a86" && vid === "7523" ) {
-					port = location;
-					console.log( "Found a match at: " + port );
+					console.log( "Found a possible match located at: " + location );
 
+					scanQueue.push( { type: "v2.2", filter: usePortFilter, port: location }, addDevice );
 				}
 			}
 		}
+	}
 
-		callback();
-	};
+	function addDevice( result, port ) {
+
+		if ( !result ) {
+			return;
+		}
+
+		// Get version from the returned device signature
+		var version = getMatchVersion( result[0] );
+
+		if ( version ) {
+
+			// Push the device to the detected list
+			$scope.deviceList.push( {
+				type: version,
+				port: port
+			} );
+		}
+	}
+
+	// Method to scan all available devices and create a regex to match them all
+	function makeUsePortFilter() {
+		var regex = [],
+			device;
+
+		for ( device in deviceList ) {
+			if ( deviceList.hasOwnProperty( device ) && deviceList[device].usePort === true ) {
+				regex.push( new RegExp( deviceList[device].id ).source );
+			}
+		}
+
+		return new RegExp( "(" + regex.join( "|" ) + ")" );
+	}
+
+	function getMatchVersion( result ) {
+		var device;
+
+		for ( device in deviceList ) {
+			if ( deviceList.hasOwnProperty( device ) && new RegExp( deviceList[device].id ).source === result ) {
+				return device;
+			}
+		}
+
+		return false;
+	}
 
 	function cleanUp() {
 		setTimeout( function() {
