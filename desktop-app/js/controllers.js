@@ -52,9 +52,6 @@ angular.module( "os-updater.controllers", [] )
 		// Default platform is Linux unless otherwise detected below
 		platform = "linux",
 
-		// Define variable to be used for the identified port
-		port,
-
 		// Define the actual scan subroutine which run for each possibly detected device
 		scanQueue = async.queue( function( task, callback ) {
 
@@ -168,7 +165,7 @@ angular.module( "os-updater.controllers", [] )
 	};
 
 	// Method to handle the update process for OpenSprinkler
-	$scope.updateAction = function( type ) {
+	$scope.updateAction = function( type, port ) {
 
 		// Define the actual update subroutine which will run after the confirmation to continue
 		var update = function( version ) {
@@ -409,7 +406,7 @@ angular.module( "os-updater.controllers", [] )
 			// Defines the total number of scans initiated
 
 			scanTotal = 0,
-			item, pid, vid, location, device;
+			item, pid, vid, port, device;
 
 		// Parse every USB devices detected
 		for ( device in devices ) {
@@ -431,10 +428,10 @@ angular.module( "os-updater.controllers", [] )
 						vid = vid[1].toLowerCase();
 					}
 
-					location = item[2] ? item[2].split( "/" ) : "";
-					if ( location.length ) {
-						location = location[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
-						location = findPort( ports, location );
+					port = item[2] ? item[2].split( "/" ) : "";
+					if ( port.length ) {
+						port = port[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+						port = findPort( ports, port );
 					}
 
 				} else if ( platform === "linux" ) {
@@ -444,7 +441,7 @@ angular.module( "os-updater.controllers", [] )
 					item = devices[device].split( "::" );
 					pid = item[2] ? item[2].toLowerCase() : "";
 					vid = item[1] ? item[1].toLowerCase() : "";
-					location = item[0];
+					port = item[0];
 
 				} else if ( platform === "win" ) {
 
@@ -461,9 +458,9 @@ angular.module( "os-updater.controllers", [] )
 						vid = vid[1].toLowerCase();
 					}
 
-					location = item[1] ? item[1].match( /COM(\d+)/i ) : "";
-					if ( location ) {
-						location = location[0];
+					port = item[1] ? item[1].match( /COM(\d+)/i ) : "";
+					if ( port ) {
+						port = port[0];
 					}
 				}
 
@@ -484,9 +481,9 @@ angular.module( "os-updater.controllers", [] )
 
 				// Detected hardware v2.2 or v2.3 and correlate the port value to the location
 				if ( pid === "1a86" && vid === "7523" ) {
-					console.log( "Found a possible match located at: " + location );
+					console.log( "Found a possible match located at: " + port );
 
-					scanQueue.push( { type: "v2.2", filter: usePortFilter, port: location }, addDevice );
+					scanQueue.push( { type: "v2.2", filter: usePortFilter, port: port }, addDevice );
 					scanTotal++;
 				}
 			}
