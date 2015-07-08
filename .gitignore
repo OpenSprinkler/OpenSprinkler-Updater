@@ -1,7 +1,13 @@
-.idea/
+# Ignore OS X meta files
+*.DS_Store
+
+# Ignore node modules and possible npm debug log
 *.log
 node_modules
+
+# Ignore development build and cache directories
 cache/
 build/*
-*.DS_Store
+
+# Ignore the development binary used for development
 desktop-app/nwjs.app
