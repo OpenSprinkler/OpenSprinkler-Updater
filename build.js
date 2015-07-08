@@ -1,87 +1,163 @@
-// TODO: automate updating desktop-app/package.json version
-console.log( "Before running, make sure versions are updated in both package.json and desktop-app/package.json" );
+// Define application name for packaged files
+var appName = "OpenSprinkler-FW-Updater",
+	NwBuilder = require( "node-webkit-builder" ),
+	appPkg = require( "./desktop-app/package.json" ),
+	fs = require( "fs" ),
+	async = require( "async" ),
+	archiver = require( "archiver" ),
+	nw = new NwBuilder( {
+	  files: "desktop-app/**",
+	  platforms: [ "osx32", "win32", "linux" ],
+	  appName: appName,
+	  appVersion: appPkg.version,
+	  winIco: "assets/win.ico",
+	  macIcns: "assets/mac.icns",
+	  buildType: "default",
+	  macZip: false,
+	  mergeZip: false
+	} );
 
-var NwBuilder = require( "node-webkit-builder" ),
-  appPkg = require( "./desktop-app/package.json" ),
-  fs = require( "fs" ),
-  appName = "OpenSprinkler-FW-Updater";
+// Clean up firmware directory before building
+rmDir( "./desktop-app/firmwares", false );
 
-var nw = new NwBuilder( {
-  files: "desktop-app/**",
-  platforms: [ "osx32", "win32", "linux" ],
-  appName: appName,
-  appVersion: appPkg.version,
-  winIco: "assets/win.ico",
-  macIcns: "assets/mac.icns",
-  buildType: "default",
-  macZip: false,
-  mergeZip: false
-} );
+// Add gitignore file to empty firmware folder
+fs.writeFile( "./desktop-app/firmwares/.gitignore", "*\n!.gitignore\n" );
 
-nw.on( "log", console.log );
+// Remove development binary in desktop-app, if present
+if ( fs.existsSync( "./desktop-app/nwjs.app" ) ) {
+	rmDir( "./desktop-app/nwjs.app" );
+}
+
+console.log( "Starting build of all selected platforms..." );
 
 nw.build()
   .then( function() {
-    console.log( "All apps have been built successfully!" );
-    createDMG();
-    createNW();
+    console.log( "All platforms have been built successfully!" );
+    async.series( [
+		function( callback ) {
+			createNW( callback );
+		},
+		function( callback ) {
+			createDMG( callback );
+		},
+		function( callback ) {
+			packageReleases( callback );
+		}
+	] );
   } )
   .catch( function( error ) {
     console.error( error );
   } );
 
-// create the regular .nw file for updates
-function createNW() {
-  console.log( "Creating regular updater.nw for updates..." );
-  var archiver = require( "archiver" ),
-    archive = archiver( "zip" );
+// Create the regular .nw file for updates
+function createNW( callback ) {
+	console.log( "Creating updater.nw for partial updates..." );
 
-  var output = fs.createWriteStream( "./build/" + appName + "/OpenSprinkler-FW-Updater-" + appPkg.version + ".nw" );
-  output.on( "close", function() {
-    console.log( ( archive.pointer() / 1000000 ).toFixed( 2 ) + "mb compressed" );
-  } );
+	var archive = archiver( "zip" ),
+		output = fs.createWriteStream( "./build/OpenSprinkler-FW-Updater-" + appPkg.version + ".nw" );
 
-  archive.pipe( output );
-  archive.bulk( [
-    { expand: true, cwd: "desktop-app", src: [ "**" ], dest: "." }
-  ] );
-  archive.finalize();
+	output.on( "close", function() {
+		console.log( "Partial update package completed (" + ( archive.pointer() / 1000000 ).toFixed( 2 ) + "MB)" );
+		callback();
+	} );
+
+	archive.pipe( output );
+	archive.bulk( [ {
+		expand: true,
+		cwd: "desktop-app",
+		src: [ "**" ],
+		dest: "."
+	} ] );
+	archive.finalize();
 }
 
-// create the mac DMG installer
-function createDMG() {
-  console.log( "Creating Mac OS X DMG..." );
+// Create the mac DMG installer
+function createDMG( callback ) {
+	console.log( "Creating Mac OS X DMG..." );
 
-  if ( fs.existsSync( "./build/" + appName + "/OpenSprinkler-FW-Updater.dmg" ) ) {
-    fs.unlinkSync( "./build/" + appName + "/OpenSprinkler-FW-Updater.dmg" );
-  }
+	if ( fs.existsSync( "./build/" + appName + ".dmg" ) ) {
+		fs.unlinkSync( "./build/" + appName + ".dmg" );
+	}
 
-  var appdmg = require( "appdmg" ),
-    ee = appdmg( {
-    source: "./assets/dmg.json",
-    target: "./build/" + appName + "/OpenSprinkler-FW-Updater.dmg"
-  } );
+	var appdmg = require( "appdmg" ),
+		ee = appdmg( {
+			source: "./assets/dmg.json",
+			target: "./build/" + appName + ".dmg"
+		} );
 
-  ee.on( "progress", function( info ) {
+	ee.on( "finish", function() {
+		console.log( "Mac OS X DMG successfully created" );
+		callback();
+	} );
 
-    // info.current is the current step
-    // info.total is the total number of steps
-    // info.type is on of 'step-begin', 'step-end'
+	ee.on( "error", function( err ) {
+		console.log( err );
+	} );
+}
 
-    // 'step-begin'
-    // info.title is the title of the current step
+// Create the final zip and tar files for all platforms for distrbution
+function packageReleases() {
+	var platforms = [ "win32", "linux32", "linux64" ];
 
-    // 'step-end'
-    // info.status is one of 'ok', 'skip', 'fail'
-    console.log( "DMG step " + info.current + "/" + info.total );
+	for ( platform in platforms ) {
+		if ( platforms.hasOwnProperty( platform ) ) {
+			createPackage( platforms[platform] );
+		}
+	}
+}
 
-  } );
+function createPackage( platform ) {
+	var archive, output, type;
 
-  ee.on( "finish", function() {
-    console.log( "Mac OS X DMG successfully created" );
-  } );
+	console.log( "Creating package for " + platform + "..." );
 
-  ee.on( "error", function( err ) {
-    console.log( err );
-  } );
+	type = ( platform === "win32" ) ? "zip" : "tar";
+
+	archive = archiver( type, {
+		gzip: true,
+		gzipOptions: {
+			level: 9
+		}
+	} );
+
+	output = fs.createWriteStream( "./build/OpenSprinkler-FW-Updater-" +
+		appPkg.version + "-" + platform + "." + type + ( platform === "win32" ? "" : ".gz" ) );
+
+	output.on( "close", function() {
+		console.log( "Package for " + platform + " completed successfully (" + ( archive.pointer() / 1000000 ).toFixed( 2 ) + "MB)" );
+	} );
+
+	archive.pipe( output );
+	archive.bulk( [ {
+		expand: true,
+		cwd: "./build/" + appName + "/" + platform,
+		src: [ "**" ],
+		dest: "."
+	} ] );
+	archive.finalize();
+}
+
+function rmDir( dirPath, removeSelf ) {
+	if ( removeSelf === undefined ) {
+		removeSelf = true;
+	}
+
+	try {
+		var files = fs.readdirSync( dirPath );
+	} catch ( err ) { return; }
+
+	if ( files.length > 0 ) {
+		for ( var i = 0; i < files.length; i++ ) {
+			var filePath = dirPath + "/" + files[i];
+			if ( fs.statSync( filePath ).isFile() ) {
+				fs.unlinkSync( filePath );
+			} else {
+				rmDir( filePath );
+			}
+		}
+	}
+
+	if ( removeSelf ) {
+		fs.rmdirSync( dirPath );
+	}
 }
