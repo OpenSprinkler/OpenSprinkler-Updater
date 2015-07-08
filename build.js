@@ -54,7 +54,7 @@ function createNW( callback ) {
 	console.log( "Creating updater.nw for partial updates..." );
 
 	var archive = archiver( "zip" ),
-		output = fs.createWriteStream( "./build/OpenSprinkler-FW-Updater-" + appPkg.version + ".nw" );
+		output = fs.createWriteStream( "./build/" + appName + "-" + appPkg.version + ".nw" );
 
 	output.on( "close", function() {
 		console.log( "Partial update package completed (" + ( archive.pointer() / 1000000 ).toFixed( 2 ) + "MB)" );
@@ -75,14 +75,14 @@ function createNW( callback ) {
 function createDMG( callback ) {
 	console.log( "Creating Mac OS X DMG..." );
 
-	if ( fs.existsSync( "./build/" + appName + ".dmg" ) ) {
-		fs.unlinkSync( "./build/" + appName + ".dmg" );
+	if ( fs.existsSync( "./build/" + appName + "-" + appPkg.version + ".dmg" ) ) {
+		fs.unlinkSync( "./build/" + appName + "-" + appPkg.version + ".dmg" );
 	}
 
 	var appdmg = require( "appdmg" ),
 		ee = appdmg( {
 			source: "./assets/dmg.json",
-			target: "./build/" + appName + ".dmg"
+			target: "./build/" + appName + "-" + appPkg.version + ".dmg"
 		} );
 
 	ee.on( "finish", function() {
