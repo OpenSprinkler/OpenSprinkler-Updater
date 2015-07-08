@@ -1,3 +1,9 @@
+/* App specific rules */
+.header {
+	background-color: #1d1d1d;
+}
+
+/* Basic app styles */
 .center {
 	text-align: center
 }
@@ -6,6 +12,11 @@
 }
 .hidden {
 	display: none;
+}
+
+/* Changelog styles */
+.changelog > .popup {
+	width: 60%;
 }
 .bullet-list {
 	list-style: initial;
@@ -18,10 +29,4 @@
 	font-size: large;
 	margin-left: -15px;
 	padding: 5px;
-}
-.changelog > .popup {
-	width: 60%;
-}
-.header {
-	background-color: #1d1d1d;
 }
