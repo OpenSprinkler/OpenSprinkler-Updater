@@ -237,7 +237,7 @@ angular.module( "os-updater.controllers", [] )
 						$ionicPopup.alert( {
 							title: "Upgrade OpenSprinkler " + type,
 							template: "<p class='center'>The firmware update was <strong>NOT</strong> successful.<br><br>" +
-							"Please review the log output for suggestions or <a target='_blank' href='https://support.opensprinkler.com'>contact support</a> if you continue to have problems.</p>"
+							"Please review the log output and try again or <a target='_blank' href='https://support.opensprinkler.com'>contact support</a> if you continue to have problems.</p>"
 						} );
 					}
 
