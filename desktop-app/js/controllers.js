@@ -332,7 +332,10 @@ angular.module( "os-updater.controllers", [] )
 
 		var command = "chmod a+x " + cwd + "/avr/linux" + arch + "/avrdude " + cwd + "/avr/serial.linux.sh";
 
-		// If the platform is Linux, set AVRDUDE permissions to executable
+		// If the platform is Linux, set AVRDUDE permissions to executable.
+		// This is done because the permissions may not be preserved due to the packaging method
+		// and as a result will not run in distribution. OS X does not compress the files therefore
+		// this issue is not encountered.
 		exec( command, { timeout: 1000 }, $scope.checkDevices );
 	} else {
 		$scope.checkDevices();
