@@ -195,7 +195,7 @@ angular.module( "os-updater.controllers", [] )
 								deviceList[type].command + " -q -F -U flash:w:" + "firmwares/" + type + "/" + file;
 
 						// Update buttons to indicate download complete and the updating has starting
-						$scope.button.text = "Installing OpenSprinkler " + type + " firmware " + version + "...";
+						$scope.button.text = "Installing firmware " + version + " on OpenSprinkler " + type + " ...";
 						$scope.$apply();
 
 						// Execute the AVRDUDE update process and process the result
