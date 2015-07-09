@@ -1,3 +1,5 @@
+/* global angular */
+
 // OpenSprinkler-FW-Updater
 // Samer Albahra
 

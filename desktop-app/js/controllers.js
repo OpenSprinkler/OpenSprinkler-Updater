@@ -415,7 +415,7 @@ angular.module( "os-updater.controllers", [] )
 
 			// Defines the total number of scans initiated
 			scanTotal = 0,
-			item, pid, vid, port, device;
+			item, device;
 
 		// Parse every USB devices detected
 		for ( device in devices ) {
@@ -476,7 +476,7 @@ angular.module( "os-updater.controllers", [] )
 			result.port = item[2] ? item[2].split( "/" ) : "";
 			if ( result.port.length ) {
 				result.port = result.port[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
-				port = findPort( ports, result.port );
+				result.port = findPort( ports, result.port );
 			}
 
 		} else if ( platform === "linux" ) {
