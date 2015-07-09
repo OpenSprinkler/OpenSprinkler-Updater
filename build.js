@@ -15,6 +15,36 @@ var appName = "OpenSprinkler-FW-Updater",
 	  buildType: "default",
 	  macZip: false,
 	  mergeZip: false
+	} ),
+	createPackage = async.queue( function( task, callback ) {
+		var archive, output, type;
+
+		console.log( "Creating package for " + task.platform + "..." );
+
+		type = ( task.platform === "win32" ) ? "zip" : "tar";
+
+		archive = archiver( type, {
+			gzip: true,
+			gzipOptions: {
+				level: 9
+			}
+		} );
+
+		output = fs.createWriteStream( "./build/OpenSprinkler-FW-Updater-" + task.platform + "." + type + ( task.platform === "win32" ? "" : ".gz" ) );
+
+		output.on( "close", function() {
+			console.log( "Package for " + task.platform + " completed successfully (" + ( archive.pointer() / 1000000 ).toFixed( 2 ) + "MB)" );
+			callback();
+		} );
+
+		archive.pipe( output );
+		archive.bulk( [ {
+			expand: true,
+			cwd: "./build/" + appName + "/" + task.platform,
+			src: [ "**" ],
+			dest: "."
+		} ] );
+		archive.finalize();
 	} );
 
 // Clean up firmware directory before building
@@ -34,9 +64,6 @@ nw.build()
   .then( function() {
     console.log( "All platforms have been built successfully!" );
     async.series( [
-		function( callback ) {
-			createNW( callback );
-		},
 		function( callback ) {
 			createDMG( callback );
 		},
@@ -73,20 +100,22 @@ function createNW( callback ) {
 
 // Create the mac DMG installer
 function createDMG( callback ) {
-	console.log( "Creating Mac OS X DMG..." );
+	console.log( "Creating package for osx..." );
 
-	if ( fs.existsSync( "./build/" + appName + ".dmg" ) ) {
-		fs.unlinkSync( "./build/" + appName + ".dmg" );
+	var location = "./build/" + appName + ".dmg";
+
+	if ( fs.existsSync( location ) ) {
+		fs.unlinkSync( location );
 	}
 
 	var appdmg = require( "appdmg" ),
 		ee = appdmg( {
 			source: "./assets/dmg.json",
-			target: "./build/" + appName + ".dmg"
+			target: location
 		} );
 
 	ee.on( "finish", function() {
-		console.log( "Mac OS X DMG successfully created" );
+		console.log( "Package for osx completed successfully (" + ( fs.statSync( location ).size / 1000000 ).toFixed( 2 ) + "MB)"  );
 		callback();
 	} );
 
@@ -102,39 +131,11 @@ function packageReleases() {
 
 	for ( platform in platforms ) {
 		if ( platforms.hasOwnProperty( platform ) ) {
-			createPackage( platforms[platform] );
+			createPackage.push( {
+				platform: platforms[platform]
+			} );
 		}
 	}
-}
-
-function createPackage( platform ) {
-	var archive, output, type;
-
-	console.log( "Creating package for " + platform + "..." );
-
-	type = ( platform === "win32" ) ? "zip" : "tar";
-
-	archive = archiver( type, {
-		gzip: true,
-		gzipOptions: {
-			level: 9
-		}
-	} );
-
-	output = fs.createWriteStream( "./build/OpenSprinkler-FW-Updater-" + platform + "." + type + ( platform === "win32" ? "" : ".gz" ) );
-
-	output.on( "close", function() {
-		console.log( "Package for " + platform + " completed successfully (" + ( archive.pointer() / 1000000 ).toFixed( 2 ) + "MB)" );
-	} );
-
-	archive.pipe( output );
-	archive.bulk( [ {
-		expand: true,
-		cwd: "./build/" + appName + "/" + platform,
-		src: [ "**" ],
-		dest: "."
-	} ] );
-	archive.finalize();
 }
 
 function rmDir( dirPath, removeSelf ) {
