@@ -8,8 +8,8 @@
     "toolbar": false,
     "resizable": true,
     "fullscreen": false,
-    "width": 505,
-    "height": 550,
+    "width": 450,
+    "height": 450,
     "position": "center"
   },
   "webkit": {
