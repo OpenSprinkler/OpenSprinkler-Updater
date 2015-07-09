@@ -1,3 +1,5 @@
+/* global angular */
+
 var exec = require( "child_process" ).exec,
 	async = require( "async" ),
 	fs = require( "fs" ),
@@ -14,10 +16,10 @@ var exec = require( "child_process" ).exec,
 	// Define regex to match dot seperated release name, eg: 2.1.5
 	releaseNameFilter = /\d\.\d\.\d/g;
 
-angular.module( "os-updater.controllers", [] )
+// Load controller for home page of the application
+angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function( $scope, $ionicPopup, $http ) {
 
-.controller( "HomeCtrl", function( $scope, $ionicPopup, $http ) {
-
+	// Get the current working directory
 	var cwd = process.cwd(),
 		arch = process.arch === "x64" ? "64" : "32",
 
@@ -455,7 +457,7 @@ angular.module( "os-updater.controllers", [] )
 
 	// Parses the line output from port scan and returns object with PID,VID and Port
 	function parseDevice( item, ports ) {
-		var result = {};
+		var vid, pid, port;
 
 		if ( platform === "osx" ) {
 
@@ -463,20 +465,21 @@ angular.module( "os-updater.controllers", [] )
 			// Location correlates with the serial port location and is used to confirm the association
 			item = item.split( ":" );
 
-			result.vid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
-			if ( result.vid ) {
-				result.vid = result.vid[1].toLowerCase();
+			// If a valid VID is present then process it
+			if ( item[0] ) {
+				vid = item[0].match( /^0x([\d\w]+)$/ )[1].toLowerCase();
 			}
 
-			result.pid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
-			if ( result.pid ) {
-				result.pid = result.pid[1].toLowerCase();
+			// If a valid PID is present then process it
+			if ( item[1] ) {
+				pid = item[1].match( /^0x([\d\w]+)$/ )[1].toLowerCase();
 			}
 
-			result.port = item[2] ? item[2].split( "/" ) : "";
-			if ( result.port.length ) {
-				result.port = result.port[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
-				result.port = findPort( ports, result.port );
+			// If a location is provided then try to match it to the corresponding device
+			if ( item[2] ) {
+				port = item[2].split( "/" );
+				port = port[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+				port = findPort( ports, port );
 			}
 
 		} else if ( platform === "linux" ) {
@@ -484,9 +487,16 @@ angular.module( "os-updater.controllers", [] )
 			// The script returns each detected device in a double colon delimited value
 			// which is in the following format: Location::VID::PID
 			item = item.split( "::" );
-			result.pid = item[2] ? item[2].toLowerCase() : "";
-			result.vid = item[1] ? item[1].toLowerCase() : "";
-			result.port = item[0];
+
+			if ( item[2] ) {
+				pid = item[2].toLowerCase();
+			}
+
+			if ( item[1] ) {
+				vid = item[1].toLowerCase();
+			}
+
+			port = item[0];
 
 		} else if ( platform === "win" ) {
 
@@ -494,23 +504,37 @@ angular.module( "os-updater.controllers", [] )
 			// which is in the following format: Platform,Device Name,Device PID/VID
 			item = item.split( "," );
 
-			result.pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
-			if ( result.pid ) {
-				result.pid = result.pid[1].toLowerCase();
+			// Check if a device PID/VID string is provided
+			if ( item[2] ) {
+
+				// Process PID from device ID string
+				pid = item[2].match( /pid_([\d\w]+)/i );
+				if ( pid ) {
+					pid = result.pid[1].toLowerCase();
+				}
+
+				// Process VID from device ID string
+				vid = item[2].match( /vid_([\d\w]+)/i );
+				if ( vid ) {
+					vid = vid[1].toLowerCase();
+				}
+
 			}
 
-			result.vid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
-			if ( result.vid ) {
-				result.vid = result.vid[1].toLowerCase();
-			}
+			if ( item[1] ) {
+				port = item[1].match( /COM(\d+)/i );
 
-			result.port = item[1] ? item[1].match( /COM(\d+)/i ) : "";
-			if ( result.port ) {
-				result.port = result.port[0];
+				if ( port ) {
+					port = port[0];
+				}
 			}
 		}
 
-		return result;
+		return {
+			vid: vid,
+			pid: pid,
+			port: port
+		};
 	}
 
 	function addDevice( result, port ) {
