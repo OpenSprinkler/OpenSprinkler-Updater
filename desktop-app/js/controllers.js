@@ -400,13 +400,12 @@ angular.module( "os-updater.controllers", [] )
 		);
 	}
 
+	// Handle reply after both commands have completed
 	function parseDevices( devices, ports ) {
 
-		// Handle reply after both commands have completed
 		var usePortFilter = makeUsePortFilter(),
 
 			// Defines the total number of scans initiated
-
 			scanTotal = 0,
 			item, pid, vid, port, device;
 
@@ -416,18 +415,18 @@ angular.module( "os-updater.controllers", [] )
 
 				if ( platform === "osx" ) {
 
-					// Each reply is delimited by a colon and contains: PID::VID::Location
+					// Each reply is delimited by a colon and contains: VID::PID::Location
 					// Location correlates with the serial port location and is used to confirm the association
 					item = devices[device].split( ":" );
 
-					pid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
-					if ( pid ) {
-						pid = pid[1].toLowerCase();
-					}
-
-					vid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
+					vid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
 					if ( vid ) {
 						vid = vid[1].toLowerCase();
+					}
+
+					pid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
+					if ( pid ) {
+						pid = pid[1].toLowerCase();
 					}
 
 					port = item[2] ? item[2].split( "/" ) : "";
@@ -438,26 +437,27 @@ angular.module( "os-updater.controllers", [] )
 
 				} else if ( platform === "linux" ) {
 
-					// The script returns each detected device is a double colon delimited value
-					// which is in the following format: Location::PID::VID
+					// The script returns each detected device in a double colon delimited value
+					// which is in the following format: Location::VID::PID
 					item = devices[device].split( "::" );
-					pid = item[1] ? item[1].toLowerCase() : "";
-					vid = item[2] ? item[2].toLowerCase() : "";
+					pid = item[2] ? item[2].toLowerCase() : "";
+					vid = item[1] ? item[1].toLowerCase() : "";
 					port = item[0];
 
 				} else if ( platform === "win" ) {
 
-					// The script returns each detected device is a comma delimited value
+					// The script returns each detected device in a comma delimited value
 					// which is in the following format: Platform,Device Name,Device PID/VID
 					item = devices[device].split( "," );
-					vid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
-					if ( vid ) {
-						vid = vid[1].toLowerCase();
-					}
 
-					pid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
+					pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
 					if ( pid ) {
 						pid = pid[1].toLowerCase();
+					}
+
+					vid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
+					if ( vid ) {
+						vid = vid[1].toLowerCase();
 					}
 
 					port = item[1] ? item[1].match( /COM(\d+)/i ) : "";
@@ -467,13 +467,13 @@ angular.module( "os-updater.controllers", [] )
 				}
 
 				// Match OpenSprinkler v2.0 PID and VID and flag it for missing driver if no response from AVRDUDE
-				if ( pid === "1781" && vid === "0c9f" ) {
+				if ( vid === "1781" && pid === "0c9f" ) {
 					scanQueue.push( { type: "v2.0" }, addDevice );
 					scanTotal++;
 				}
 
 				// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
-				if ( pid === "16c0" && vid === "05dc" ) {
+				if ( vid === "16c0" && pid === "05dc" ) {
 					console.log( "Found OpenSprinkler v2.1" );
 
 					$scope.deviceList.push( {
@@ -482,7 +482,7 @@ angular.module( "os-updater.controllers", [] )
 				}
 
 				// Detected hardware v2.2 or v2.3 and correlate the port value to the location
-				if ( pid === "1a86" && vid === "7523" ) {
+				if ( vid === "1a86" && pid === "7523" ) {
 					console.log( "Found a possible match located at: " + port );
 
 					scanQueue.push( { type: "v2.2", filter: usePortFilter, port: port }, addDevice );
