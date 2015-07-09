@@ -76,7 +76,7 @@ nw.build()
     console.error( error );
   } );
 
-// Create the regular .nw file for updates
+/* Create the regular .nw file for updates
 function createNW( callback ) {
 	console.log( "Creating updater.nw for partial updates..." );
 
@@ -97,6 +97,7 @@ function createNW( callback ) {
 	} ] );
 	archive.finalize();
 }
+*/
 
 // Create the mac DMG installer
 function createDMG( callback ) {

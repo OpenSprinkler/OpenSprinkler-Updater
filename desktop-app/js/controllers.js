@@ -130,9 +130,6 @@ angular.module( "os-updater.controllers", [] )
 		$scope.button.disabled = true;
 		$scope.deviceList = [];
 
-		// Set the default state to no devices found
-		var deviceFound = false;
-
 		// Begin scanning for available serial ports
 		if ( platform === "osx" ) {
 
@@ -141,7 +138,7 @@ angular.module( "os-updater.controllers", [] )
 
 				// The first command will list all Call-Up serial ports
 				ports: function( callback ) {
-					exec( "ls /dev/cu.*", { timeout: 1000 }, function( error, stdout, stderr ) {
+					exec( "ls /dev/cu.*", { timeout: 1000 }, function( error, stdout ) {
 
 						// Return the list delimited by line return
 						callback( null, stdout.split( "\n" ) );
@@ -150,7 +147,7 @@ angular.module( "os-updater.controllers", [] )
 
 				// The second command requests the USB informatin from system_profiler (command in bash script)
 				devices: function( callback ) {
-					exec( "avr/serial.osx.sh", { timeout: 1000 }, function( error, stdout, stderr ) {
+					exec( "avr/serial.osx.sh", { timeout: 1000 }, function( error, stdout ) {
 
 						// Return the list delimited by line return
 						callback( null, stdout.split( "\n" ) );
@@ -167,7 +164,7 @@ angular.module( "os-updater.controllers", [] )
 				parseDevices( stdout.split( "\n" ), null );
 			} );
 		} else if ( platform === "win" ) {
-			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", { timeout: 1000 }, function( error, stdout, stderr ) {
+			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", { timeout: 1000 }, function( error, stdout ) {
 				parseDevices( stdout.split( "\n" ), null );
 			} );
 		}
@@ -254,7 +251,7 @@ angular.module( "os-updater.controllers", [] )
 			confirmUpdate = function( versions ) {
 
 				// Ensure the user intended to proceed with the firmware update which will erase current settings on the device
-				confirmPopup = $ionicPopup.confirm( {
+				$ionicPopup.confirm( {
 					title: "OpenSprinkler " + type + " Update",
 					scope: $scope,
 					cssClass: "wide",
@@ -274,7 +271,7 @@ angular.module( "os-updater.controllers", [] )
 					}
 				} );
 			},
-			file, start;
+			file;
 
 		getAvailableFirmwares( type, function( versions ) {
 			var html = "",
@@ -321,7 +318,7 @@ angular.module( "os-updater.controllers", [] )
 		$scope.latestRelease.name = releases[0].name;
 
 		// Update body text
-		changeLog = releases[0].body.split( "\r\n" );
+		var changeLog = releases[0].body.split( "\r\n" );
 
 		for ( line in changeLog ) {
 			if ( changeLog.hasOwnProperty( line ) ) {
@@ -402,7 +399,7 @@ angular.module( "os-updater.controllers", [] )
 				fs.writeFile( cwd + "/firmwares/" + device + "/" + version + ".hex", response.data, callback );
 				console.log( "Downloaded firmware " + version + " for OpenSprinkler " + device + " successfully!" );
 			},
-			function( err ) {
+			function() {
 
 				// Do nothing if download failed
 				networkFail();
@@ -411,7 +408,7 @@ angular.module( "os-updater.controllers", [] )
 		);
 	}
 
-	// Handle reply after both commands have completed
+	// Handle reply after USB scan has completed
 	function parseDevices( devices, ports ) {
 
 		var usePortFilter = makeUsePortFilter(),
@@ -424,67 +421,16 @@ angular.module( "os-updater.controllers", [] )
 		for ( device in devices ) {
 			if ( devices.hasOwnProperty( device ) ) {
 
-				if ( platform === "osx" ) {
-
-					// Each reply is delimited by a colon and contains: VID::PID::Location
-					// Location correlates with the serial port location and is used to confirm the association
-					item = devices[device].split( ":" );
-
-					vid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
-					if ( vid ) {
-						vid = vid[1].toLowerCase();
-					}
-
-					pid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
-					if ( pid ) {
-						pid = pid[1].toLowerCase();
-					}
-
-					port = item[2] ? item[2].split( "/" ) : "";
-					if ( port.length ) {
-						port = port[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
-						port = findPort( ports, port );
-					}
-
-				} else if ( platform === "linux" ) {
-
-					// The script returns each detected device in a double colon delimited value
-					// which is in the following format: Location::VID::PID
-					item = devices[device].split( "::" );
-					pid = item[2] ? item[2].toLowerCase() : "";
-					vid = item[1] ? item[1].toLowerCase() : "";
-					port = item[0];
-
-				} else if ( platform === "win" ) {
-
-					// The script returns each detected device in a comma delimited value
-					// which is in the following format: Platform,Device Name,Device PID/VID
-					item = devices[device].split( "," );
-
-					pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
-					if ( pid ) {
-						pid = pid[1].toLowerCase();
-					}
-
-					vid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
-					if ( vid ) {
-						vid = vid[1].toLowerCase();
-					}
-
-					port = item[1] ? item[1].match( /COM(\d+)/i ) : "";
-					if ( port ) {
-						port = port[0];
-					}
-				}
+				item = parseDevice( devices[device], ports );
 
 				// Match OpenSprinkler v2.0 PID and VID and flag it for missing driver if no response from AVRDUDE
-				if ( vid === "1781" && pid === "0c9f" ) {
+				if ( item.vid === "1781" && item.pid === "0c9f" ) {
 					scanQueue.push( { type: "v2.0" }, addDevice );
 					scanTotal++;
 				}
 
 				// Match OpenSprinkler v2.1 PID and VID and add it to the detected list since no scanning is needed
-				if ( vid === "16c0" && pid === "05dc" ) {
+				if ( item.vid === "16c0" && item.pid === "05dc" ) {
 					console.log( "Found OpenSprinkler v2.1" );
 
 					$scope.deviceList.push( {
@@ -493,10 +439,10 @@ angular.module( "os-updater.controllers", [] )
 				}
 
 				// Detected hardware v2.2 or v2.3 and correlate the port value to the location
-				if ( vid === "1a86" && pid === "7523" ) {
-					console.log( "Found a possible match located at: " + port );
+				if ( item.vid === "1a86" && item.pid === "7523" ) {
+					console.log( "Found a possible match located at: " + item.port );
 
-					scanQueue.push( { type: "v2.2", filter: usePortFilter, port: port }, addDevice );
+					scanQueue.push( { type: "v2.2", filter: usePortFilter, port: item.port }, addDevice );
 					scanTotal++;
 				}
 			}
@@ -505,6 +451,66 @@ angular.module( "os-updater.controllers", [] )
 		if ( scanTotal === 0 ) {
 			cleanUp();
 		}
+	}
+
+	// Parses the line output from port scan and returns object with PID,VID and Port
+	function parseDevice( item, ports ) {
+		var result = {};
+
+		if ( platform === "osx" ) {
+
+			// Each reply is delimited by a colon and contains: VID::PID::Location
+			// Location correlates with the serial port location and is used to confirm the association
+			item = item.split( ":" );
+
+			result.vid = item[0] ? item[0].match( /^0x([\d|\w]+)$/ ) : "";
+			if ( result.vid ) {
+				result.vid = result.vid[1].toLowerCase();
+			}
+
+			result.pid = item[1] ? item[1].match( /^0x([\d|\w]+)$/ ) : "";
+			if ( result.pid ) {
+				result.pid = result.pid[1].toLowerCase();
+			}
+
+			result.port = item[2] ? item[2].split( "/" ) : "";
+			if ( result.port.length ) {
+				result.port = result.port[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+				port = findPort( ports, result.port );
+			}
+
+		} else if ( platform === "linux" ) {
+
+			// The script returns each detected device in a double colon delimited value
+			// which is in the following format: Location::VID::PID
+			item = item.split( "::" );
+			result.pid = item[2] ? item[2].toLowerCase() : "";
+			result.vid = item[1] ? item[1].toLowerCase() : "";
+			result.port = item[0];
+
+		} else if ( platform === "win" ) {
+
+			// The script returns each detected device in a comma delimited value
+			// which is in the following format: Platform,Device Name,Device PID/VID
+			item = item.split( "," );
+
+			result.pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
+			if ( result.pid ) {
+				result.pid = result.pid[1].toLowerCase();
+			}
+
+			result.vid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
+			if ( result.vid ) {
+				result.vid = result.vid[1].toLowerCase();
+			}
+
+			result.port = item[1] ? item[1].match( /COM(\d+)/i ) : "";
+			if ( result.port ) {
+				result.port = result.port[0];
+			}
+		}
+
+		return result;
 	}
 
 	function addDevice( result, port ) {
@@ -583,23 +589,6 @@ angular.module( "os-updater.controllers", [] )
 		}
 
 		return false;
-	}
-
-	// Sorts firmware versions in a string format such as: 2.1.5.hex by collapsing
-	// the numbers into an integer and comparing them
-	function sortFirmwares( a, b ) {
-
-		// Filter that matches version numbers that are decimal delimited, eg: 2.1.5
-	    a = parseInt( a.match( releaseNameFilter )[0].replace( /\./g, "" ) );
-	    b = parseInt( b.match( releaseNameFilter )[0].replace( /\./g, "" ) );
-	    console.log( a, b );
-	    if ( a < b ) {
-	        return -1;
-	    }
-	    if ( a > b ) {
-	        return 1;
-	    }
-	    return 0;
 	}
 
 	// Resolves the Month / Day / Year of a Date object
