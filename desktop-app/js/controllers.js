@@ -4,6 +4,46 @@ var exec = require( "child_process" ).exec,
 	async = require( "async" ),
 	fs = require( "fs" ),
 
+	// Get the current working directory
+	cwd = process.cwd(),
+
+	// Get the architecture type
+	arch = process.arch === "x64" ? "64" : "32",
+
+	// Defines the base command to AVRDUDE per platform
+	commandPrefix = {
+		win: cwd + "\\avr\\win\\avrdude.exe -C " + cwd + "\\avr\\win\\avrdude.conf ",
+		osx: cwd + "/avr/osx/avrdude -C " + cwd + "/avr/osx/avrdude.conf ",
+		linux: cwd + "/avr/linux" + arch + "/avrdude -C " + cwd + "/avr/linux" + arch + "/avrdude.conf "
+	},
+
+	// Defines the available devices, their CPU signature and base command
+	deviceList = {
+		"v2.0": {
+			id: /0x1e96/g,
+			command: "-c usbtiny -p m644 "
+		},
+		"v2.1": {
+			id: /0x1e96/g,
+			command: "-c usbasp -p m644 "
+		},
+		"v2.2": {
+			id: /0x1e96/g,
+
+			// Indicates a serial port must be specified to interface with this device
+			usePort: true,
+			command: "-c arduino -p m644p -b 115200 "
+		},
+		"v2.3": {
+			id: /0x1e97/g,
+			usePort: true,
+			command: "-c arduino -p m1284p -b 115200 "
+		}
+	},
+
+	// Default platform is Linux unless otherwise detected below
+	platform = "linux",
+
 	// Define Github directory to use for firmware download
 	githubFW = "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Compiled-Firmware/master/",
 
@@ -19,110 +59,73 @@ var exec = require( "child_process" ).exec,
 	// Define regex to match for device ID fields (PID and VID)
 	deviceIDFilter = /^0x([\d\w]+)$/;
 
+// Change the platform to the appropriate value
+if ( /^win/.test( process.platform ) ) {
+
+	// Detected Windows
+	platform = "win";
+} else if ( /^darwin/.test( process.platform ) ) {
+
+	// Detected OS X
+	platform = "osx";
+}
+
 // Load controller for home page of the application
 angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function( $scope, $ionicPopup, $http ) {
 
-	// Get the current working directory
-	var cwd = process.cwd(),
-		arch = process.arch === "x64" ? "64" : "32",
+	// Define the actual scan subroutine which run for each possibly detected device
+	var scanQueue = async.queue( function( task, callback ) {
 
-		// Defines the base command to AVRDUDE per platform
-		commandPrefix = {
-			win: cwd + "\\avr\\win\\avrdude.exe -C " + cwd + "\\avr\\win\\avrdude.conf ",
-			osx: cwd + "/avr/osx/avrdude -C " + cwd + "/avr/osx/avrdude.conf ",
-			linux: cwd + "/avr/linux" + arch + "/avrdude -C " + cwd + "/avr/linux" + arch + "/avrdude.conf "
-		},
+		var device = deviceList[task.type],
 
-		// Defines the available devices, their CPU signature and base command
-		deviceList = {
-			"v2.0": {
-				id: /0x1e96/g,
-				command: "-c usbtiny -p m644 "
-			},
-			"v2.1": {
-				id: /0x1e96/g,
-				command: "-c usbasp -p m644 "
-			},
-			"v2.2": {
-				id: /0x1e96/g,
+			// Assign the signature filter to be used for scanning purposes
+			filter = task.filter || device.id,
 
-				// Indicates a serial port must be specified to interface with this device
-				usePort: true,
-				command: "-c arduino -p m644p -b 115200 "
-			},
-			"v2.3": {
-				id: /0x1e97/g,
-				usePort: true,
-				command: "-c arduino -p m1284p -b 115200 "
-			}
-		},
+			// Generate command to probe for device version
+			command = commandPrefix[platform] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command;
 
-		// Default platform is Linux unless otherwise detected below
-		platform = "linux",
+		// Execute the AVRDUDE command and parse the reply
+		exec( command, { timeout: 3000 }, function( error, stdout, stderr ) {
+			stdout = stdout || stderr;
 
-		// Define the actual scan subroutine which run for each possibly detected device
-		scanQueue = async.queue( function( task, callback ) {
+			console.log( "Command: " + command, device, stdout );
 
-			var device = deviceList[task.type],
+			var matches = stdout.match( filter ),
+				matchFound;
 
-				// Assign the signature filter to be used for scanning purposes
-				filter = task.filter || device.id,
-
-				// Generate command to probe for device version
-				command = commandPrefix[platform] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command;
-
-			// Execute the AVRDUDE command and parse the reply
-			exec( command, { timeout: 3000 }, function( error, stdout, stderr ) {
-				stdout = stdout || stderr;
-
-				console.log( "Command: " + command, device, stdout );
-
-				var matches = stdout.match( filter ),
-					matchFound;
-
-				// Check the device signature against the associated ID
-				if ( stdout.indexOf( "Device signature = " ) !== -1 && matches ) {
-					matchFound = matches[0];
-				} else if ( stdout.indexOf( "Operation not permitted" ) !== -1 && platform === "linux" ) {
-					$ionicPopup.alert( {
-						title: "OpenSprinkler Updater Permissions",
-						template: "<p class='center'>USB access on Linux requires root permission. Please re-run the application using sudo.</p>"
-					} );
-				} else if ( !matchFound && platform === "win" && ( task.type === "v2.0" || task.type === "v2.1" ) ) {
+			// Check the device signature against the associated ID
+			if ( stdout.indexOf( "Device signature = " ) !== -1 && matches ) {
+				matchFound = matches[0];
+			} else if ( stdout.indexOf( "Operation not permitted" ) !== -1 && platform === "linux" ) {
+				$ionicPopup.alert( {
+					title: "OpenSprinkler Updater Permissions",
+					template: "<p class='center'>USB access on Linux requires root permission. Please re-run the application using sudo.</p>"
+				} );
+			} else if ( !matchFound && platform === "win" && ( task.type === "v2.0" || task.type === "v2.1" ) ) {
+				$ionicPopup.alert( {
+					title: "OpenSprinkler Drivers",
+					template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
+						"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>"
+				} );
+			} else if ( !matchFound && platform === "osx" && ( task.type === "v2.2" ) ) {
+				if ( platform === "osx" ) {
 					$ionicPopup.alert( {
 						title: "OpenSprinkler Drivers",
-						template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
-							"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>"
+						template: "<p class='center'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed." +
+							"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>"
 					} );
-				} else if ( !matchFound && platform === "osx" && ( task.type === "v2.2" ) ) {
-					if ( platform === "osx" ) {
-						$ionicPopup.alert( {
-							title: "OpenSprinkler Drivers",
-							template: "<p class='center'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed." +
-								"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>"
-						} );
-					}
 				}
+			}
 
-				// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
-				setTimeout( function() {
-					callback( matchFound, task.port );
-				}, 200 );
-			} );
+			// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
+			setTimeout( function() {
+				callback( matchFound, task.port );
+			}, 200 );
 		} );
+	} );
 
 	// Clean up the page after the scan queue is complete
 	scanQueue.drain = cleanUp;
-
-	if ( /^win/.test( process.platform ) ) {
-
-		// Detected Windows
-		platform = "win";
-	} else if ( /^darwin/.test( process.platform ) ) {
-
-		// Detected OS X
-		platform = "osx";
-	}
 
 	// Define object to carry properties for home page buttons
 	$scope.button = {};
