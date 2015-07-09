@@ -477,8 +477,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 			// If a location is provided then try to match it to the corresponding device
 			if ( item[2] ) {
-				port = item[2].split( "/" );
-				port = port[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+				port = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
 				port = findPort( ports, port );
 			}
 
@@ -510,7 +509,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				// Process PID from device ID string
 				pid = item[2].match( /pid_([\d\w]+)/i );
 				if ( pid ) {
-					pid = result.pid[1].toLowerCase();
+					pid = pid[1].toLowerCase();
 				}
 
 				// Process VID from device ID string
@@ -518,12 +517,10 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				if ( vid ) {
 					vid = vid[1].toLowerCase();
 				}
-
 			}
 
 			if ( item[1] ) {
 				port = item[1].match( /COM(\d+)/i );
-
 				if ( port ) {
 					port = port[0];
 				}
