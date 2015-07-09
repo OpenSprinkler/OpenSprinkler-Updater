@@ -88,8 +88,6 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		exec( command, { timeout: 3000 }, function( error, stdout, stderr ) {
 			stdout = stdout || stderr;
 
-			console.log( "Command: " + command, device, stdout );
-
 			var matches = stdout.match( filter ),
 				matchFound;
 
