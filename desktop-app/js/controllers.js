@@ -259,7 +259,7 @@ angular.module( "os-updater.controllers", [] )
 						"Are you sure you want to upgrade OpenSprinkler " + type + "?</div>"
 				} ).then( function( result ) {
 					if ( result ) {
-						update( $scope.selectedFirmware );
+						update( $scope.selectedFirmware || $scope.latestRelease.name );
 					}
 				} );
 			},
