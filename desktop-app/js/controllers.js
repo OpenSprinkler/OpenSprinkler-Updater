@@ -41,17 +41,17 @@ var exec = require( "child_process" ).exec,
 		}
 	},
 
-	// Default platform is Linux unless otherwise detected below
-	platform = "linux",
-
 	// Define Github directory to use for firmware download
-	githubFW = "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Compiled-Firmware/master/",
+	githubDownload = "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Compiled-Firmware/master/",
 
 	// Define Github API endpoint to request latest firmware release
 	githubRelease = "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Firmware/releases",
 
 	// Github API endpoint to request available firmware versions
-	githubAPI = "https://api.github.com/repos/opensprinkler/OpenSprinkler-Compiled-Firmware/contents/",
+	githubAPI = "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Compiled-Firmware/contents/",
+
+	// Default platform is Linux unless otherwise detected below
+	platform = "linux",
 
 	// Define regex to match dot seperated release name, eg: 2.1.5
 	releaseNameFilter = /\d\.\d\.\d/g,
@@ -181,11 +181,6 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			} );
 		}
 	};
-
-	// Perform a scan for new devices every 5 seconds while the app is open
-	setInterval( function() {
-		$scope.checkDevices();
-	}, 5000 );
 
 	// Method to handle the update process for OpenSprinkler
 	$scope.updateAction = function( type, port ) {
@@ -366,6 +361,11 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		$scope.checkDevices();
 	}
 
+	// Perform a scan for new devices every 5 seconds while the app is open
+	setInterval( function() {
+		$scope.checkDevices();
+	}, 5000 );
+
 	// Method to query Github for all available firmware versions for a particular device type
 	function getAvailableFirmwares( device, callback ) {
 		var fileList = [];
@@ -397,7 +397,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	function downloadFirmware( device, version, callback ) {
 
 		// The default URL to grab compiled firmware will be the Github repository
-		var url = githubFW + device + "/firmware" + version + ".hex";
+		var url = githubDownload + device + "/firmware" + version + ".hex";
 
 		// If the directory for the hardware type doesn't exist then create it
 		if ( !fs.existsSync( cwd + "/firmwares" ) ) {
