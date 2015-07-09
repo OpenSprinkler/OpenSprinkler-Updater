@@ -84,7 +84,7 @@ angular.module( "os-updater.controllers", [] )
 					$ionicPopup.alert( {
 						title: "OpenSprinkler Drivers",
 						template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
-							"You may install them by following this link: <a target='_blank' href='http://zadig.akeo.ie/'>http://zadig.akeo.ie/</a> (choose libusb-win32).</p>"
+							"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>"
 					} );
 				}
 
@@ -169,7 +169,7 @@ angular.module( "os-updater.controllers", [] )
 		var update = function( version ) {
 
 				// Disable the page buttons and update the status text
-				$scope.uppdateLog = "";
+				$scope.updateLog = "";
 				$scope.button.disabled = true;
 				$scope.button.text = "Updating OpenSprinkler " + type + "...";
 
@@ -195,7 +195,7 @@ angular.module( "os-updater.controllers", [] )
 								deviceList[type].command + " -q -F -U flash:w:" + "firmwares/" + type + "/" + file;
 
 						// Update buttons to indicate download complete and the updating has starting
-						$scope.button.text = "Installing firmware " + version + " on OpenSprinkler " + type + "...";
+						$scope.button.text = "Flashing firmware " + version + " on OpenSprinkler " + type + "...";
 						$scope.$apply();
 
 						// Execute the AVRDUDE update process and process the result
@@ -209,7 +209,7 @@ angular.module( "os-updater.controllers", [] )
 							if ( !result ) {
 
 								// If the update failed, load the log into the page for the user to see
-								$scope.updateLog = stdout;
+								$scope.updateLog = "<pre>" + stdout.replace( "\n", "<br>" ) + "</pre>";
 							}
 
 							// Return the result to the final callback handler
@@ -409,6 +409,8 @@ angular.module( "os-updater.controllers", [] )
 			scanTotal = 0,
 			item, pid, vid, port, device;
 
+		$scope.driverMessage = "";
+
 		// Parse every USB devices detected
 		for ( device in devices ) {
 			if ( devices.hasOwnProperty( device ) ) {
@@ -493,6 +495,12 @@ angular.module( "os-updater.controllers", [] )
 
 		if ( scanTotal === 0 ) {
 			cleanUp();
+
+			if ( platform === "osx" ) {
+
+				// Suggest drivers may be needed when no devices are found
+				$scope.driverMessage = "OpenSprinkler v2.2 and newer require drivers for OS X and can be obtained from <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.";
+			}
 		}
 	}
 

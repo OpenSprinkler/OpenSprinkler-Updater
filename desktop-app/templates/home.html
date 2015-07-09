@@ -3,6 +3,11 @@
         <img src="img/logo.svg">
     </ion-nav-title>
     <ion-content class="padding">
+        <div class="list card" ng-hide="!driverMessage">
+            <div class="item item-body" ng-bind-html="driverMessage">
+            </div>
+        </div>
+
         <div class="list card">
 
             <div class="item item-divider">Connected Devices</div>
