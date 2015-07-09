@@ -499,7 +499,7 @@ angular.module( "os-updater.controllers", [] )
 		}
 
 		// Get version from the returned device signature
-		var version = getMatchVersion( result );
+		var version = getMatchVersion( result, ( port ? true : false ) );
 
 		if ( version ) {
 
@@ -527,11 +527,11 @@ angular.module( "os-updater.controllers", [] )
 		return new RegExp( "(" + regex.join( "|" ) + ")" );
 	}
 
-	function getMatchVersion( result ) {
+	function getMatchVersion( result, usePort ) {
 		var device;
 
 		for ( device in deviceList ) {
-			if ( deviceList.hasOwnProperty( device ) && new RegExp( deviceList[device].id ).source === result ) {
+			if ( deviceList.hasOwnProperty( device ) && deviceList[device].usePort && new RegExp( deviceList[device].id ).source === result ) {
 				return device;
 			}
 		}
