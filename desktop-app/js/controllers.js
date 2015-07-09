@@ -3,10 +3,10 @@ var exec = require( "child_process" ).exec,
 	fs = require( "fs" ),
 
 	// Define Github directory to use for firmware download
-	githubFW = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/master/compiled-fw/",
+	githubFW = "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Compiled-Firmware/master/",
 
 	// Define Github API endpoint to request latest firmware release
-	githubRelease = "https://api.github.com/repos/opensprinkler/opensprinkler-firmware/releases",
+	githubRelease = "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Firmware/releases",
 
 	// Github API endpoint to request available firmware versions
 	githubAPI = "https://api.github.com/repos/opensprinkler/OpenSprinkler-Compiled-Firmware/contents/",
