@@ -133,10 +133,14 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	// Method to scan for and find all connected devices (bound to check for devices button)
 	$scope.checkDevices = function() {
 
+		// Return if the auto-refresh timer triggers a new scan while updating a device
+		if ( $scope.button.disabled === true ) {
+			return;
+		}
+
 		// Indicate a device scan is underway
 		$scope.button.text = "Checking for devices...";
 		$scope.button.disabled = true;
-		$scope.deviceList = [];
 
 		// Begin scanning for available serial ports
 		if ( platform === "osx" ) {
@@ -177,6 +181,11 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			} );
 		}
 	};
+
+	// Perform a scan for new devices every 5 seconds while the app is open
+	setInterval( function() {
+		$scope.checkDevices();
+	}, 5000 );
 
 	// Method to handle the update process for OpenSprinkler
 	$scope.updateAction = function( type, port ) {
@@ -424,6 +433,8 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			// Defines the total number of scans initiated
 			scanTotal = 0,
 			item, device;
+
+		$scope.deviceList = [];
 
 		// Parse every USB devices detected
 		for ( device in devices ) {
