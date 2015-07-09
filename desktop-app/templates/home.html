@@ -18,7 +18,7 @@
                             <div class="item item-button-right">
                                 OpenSprinkler {{device.type}}
                                 <button ng-click="updateAction(device.type,device.port)" class="button button-stable" ng-disabled="button.disabled">
-                                    Upgrade Firmware
+                                    Update Firmware
                                 </button>
                             </div>
                         </div>
@@ -46,9 +46,9 @@
             </div>
         </div>
 
-        <div class="list card" ng-hide="!upgradeLog">
-            <div class="item item-divider">Upgrade Log Output</div>
-            <div class="item item-body" ng-bind-html="upgradeLog">
+        <div class="list card" ng-hide="!updateLog">
+            <div class="item item-divider">Update Log Output</div>
+            <div class="item item-body" ng-bind-html="updateLog">
             </div>
         </div>
 

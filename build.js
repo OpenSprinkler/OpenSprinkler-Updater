@@ -97,7 +97,8 @@ function createDMG( callback ) {
 
 // Create the final zip and tar files for all platforms for distrbution
 function packageReleases() {
-	var platforms = [ "win32", "linux32", "linux64" ];
+	var platforms = [ "win32", "linux32", "linux64" ],
+		platform;
 
 	for ( platform in platforms ) {
 		if ( platforms.hasOwnProperty( platform ) ) {
@@ -137,12 +138,14 @@ function createPackage( platform ) {
 }
 
 function rmDir( dirPath, removeSelf ) {
+	var files;
+
 	if ( removeSelf === undefined ) {
 		removeSelf = true;
 	}
 
 	try {
-		var files = fs.readdirSync( dirPath );
+		files = fs.readdirSync( dirPath );
 	} catch ( err ) { return; }
 
 	if ( files.length > 0 ) {

@@ -169,7 +169,7 @@ angular.module( "os-updater.controllers", [] )
 		var update = function( version ) {
 
 				// Disable the page buttons and update the status text
-				$scope.upgradeLog = "";
+				$scope.uppdateLog = "";
 				$scope.button.disabled = true;
 				$scope.button.text = "Updating OpenSprinkler " + type + "...";
 
@@ -184,67 +184,67 @@ angular.module( "os-updater.controllers", [] )
 					status: function( callback ) {
 						if ( !file ) {
 
-							// If no file is defined then do not attempt to upgrade but instead just fail
+							// If no file is defined then do not attempt to update but instead just fail
 							callback( null, { status: false } );
 							return;
 						}
 
-						// Define the command to be used for upgrading
+						// Define the command to be used for updating
 						var command = commandPrefix[platform] +
 								( deviceList[type].usePort && port ? "-P " + port + " " : "" ) +
 								deviceList[type].command + " -q -F -U flash:w:" + "firmwares/" + type + "/" + file;
 
-						// Update buttons to indicate download complete and the upgrading has starting
-						$scope.button.text = "Updating OpenSprinkler " + type + " firmware...";
+						// Update buttons to indicate download complete and the updating has starting
+						$scope.button.text = "Installing OpenSprinkler " + type + " firmware " + version + "...";
 						$scope.$apply();
 
-						// Execute the AVRDUDE upgrade process and process the result
+						// Execute the AVRDUDE update process and process the result
 						exec( command, function( error, stdout, stderr ) {
 							stdout = stdout || stderr;
 
 							// At the end of the AVRDUDE command, the flash memory is verified and if successful a message indicating so is displayed
-							// Check for that message as a means to verify the upgrade was successful
+							// Check for that message as a means to verify the update was successful
 							var result = stdout.indexOf( "verified" ) === -1 ? false : true;
 
 							if ( !result ) {
 
-								// If the upgrade failed, load the log into the page for the user to see
-								$scope.upgradeLog = stdout;
+								// If the update failed, load the log into the page for the user to see
+								$scope.updateLog = stdout;
 							}
 
 							// Return the result to the final callback handler
 							callback( null, result );
 
-							console.log( "OpenSprinkler " + type + " upgrade " + ( result ? "succeeded" : "failed" ) );
+							console.log( "OpenSprinkler " + type + " firmware " + version + " install " + ( result ? "succeeded" : "failed" ) );
 						} );
 					}
 				}, function( err, results ) {
 
-					// Process results once the download and upgrade process has completed. If the status was successful indicate so to the user.
+					// Process results once the download and update process has completed. If the status was successful indicate so to the user.
 					if ( results.status ) {
 						$ionicPopup.alert( {
-							title: "Upgrade OpenSprinkler " + type,
+							title: "OpenSprinkler " + type + " Update",
 							template: "<p class='center'>The firmware update was successful and the device is rebooting. Please note the device will be restored to its factory settings.</p>"
 						} );
 					} else {
 
 						// Otherwise, let the user know it failed
 						$ionicPopup.alert( {
-							title: "Upgrade OpenSprinkler " + type,
+							title: "OpenSprinkler " + type + " Update",
 							template: "<p class='center'>The firmware update was <strong>NOT</strong> successful.<br><br>" +
 							"Please review the log output and try again or <a target='_blank' href='https://support.opensprinkler.com'>contact support</a> if you continue to have problems.</p>"
 						} );
 					}
 
-					// Clean up the page buttons after upgrade completion
+					// Clean up the page buttons after update completion
 					cleanUp();
 				} );
 			},
 			confirmUpdate = function( versions ) {
 
-				// Ensure the user intended to proceed with the firmware upgrade which will erase current settings on the device
+				// Ensure the user intended to proceed with the firmware update which will erase current settings on the device
 				confirmPopup = $ionicPopup.confirm( {
-					title: "Upgrade OpenSprinkler " + type,
+					title: "OpenSprinkler " + type + " Update",
 					scope: $scope,
 					cssClass: "wide",
 					template: "<div class='center'>Please note the device will be restored to it's default settings during the update so please make sure you already have a backup.<br><br>" +
@@ -256,7 +256,7 @@ angular.module( "os-updater.controllers", [] )
 								"<select ng-init='fwv = \"" + ( $scope.selectedFirmware || $scope.latestRelease.name ) + "\"' ng-model='fwv' ng-change='changeFirmwareSelection(fwv)'>" + versions + "</select>" +
 							"</label>" +
 						"</div>" +
-						"Are you sure you want to upgrade OpenSprinkler " + type + "?</div>"
+						"Are you sure you want to update OpenSprinkler " + type + "?</div>"
 				} ).then( function( result ) {
 					if ( result ) {
 						update( $scope.selectedFirmware || $scope.latestRelease.name );
@@ -534,9 +534,11 @@ angular.module( "os-updater.controllers", [] )
 	function getMatchVersion( result, usePort ) {
 		var device;
 		for ( device in deviceList ) {
+			/*jshint -W018 */
 			if ( deviceList.hasOwnProperty( device ) && new RegExp( deviceList[device].id ).source === result && !!deviceList[device].usePort === usePort ) {
 				return device;
 			}
+			/*jshint +W018 */
 		}
 
 		return false;
