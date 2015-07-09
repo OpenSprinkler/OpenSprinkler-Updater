@@ -246,6 +246,7 @@ angular.module( "os-updater.controllers", [] )
 				confirmPopup = $ionicPopup.confirm( {
 					title: "Upgrade OpenSprinkler " + type,
 					scope: $scope,
+					cssClass: "wide",
 					template: "<div class='center'>Please note the device will be restored to it's default settings during the update so please make sure you already have a backup.<br><br>" +
 						"<div class='list' style='padding-bottom:10px'>" +
 							"<label class='item item-input item-select'>" +
@@ -288,7 +289,7 @@ angular.module( "os-updater.controllers", [] )
 		$ionicPopup.alert( {
 			title: "Firmware " + $scope.latestRelease.name + " Changelog",
 			template: $scope.latestRelease.changeLog,
-			cssClass: "changelog"
+			cssClass: "wide"
 		} );
 	};
 

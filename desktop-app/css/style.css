@@ -13,11 +13,11 @@
 .hidden {
 	display: none;
 }
-
-/* Changelog styles */
-.changelog > .popup {
+.wide > .popup {
 	width: 60%;
 }
+
+/* Changelog styles */
 .bullet-list {
 	list-style: initial;
 	padding-left: 20px;
