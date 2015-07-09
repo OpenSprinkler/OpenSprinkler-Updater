@@ -5,8 +5,11 @@ var exec = require( "child_process" ).exec,
 	// Define Github directory to use for firmware download
 	githubFW = "https://raw.githubusercontent.com/salbahra/OpenSprinkler-FW-Updater/master/compiled-fw/",
 
+	// Define Github API endpoint to request latest firmware release
+	githubRelease = "https://api.github.com/repos/opensprinkler/opensprinkler-firmware/releases",
+
 	// Github API endpoint to request available firmware versions
-	githubAPI = "https://api.github.com/repositories/38519612/contents/compiled-fw/",
+	githubAPI = "https://api.github.com/repos/opensprinkler/OpenSprinkler-Compiled-Firmware/contents/",
 
 	// Define regex to match dot seperated release name, eg: 2.1.5
 	releaseNameFilter = /\d\.\d\.\d/g;
@@ -294,7 +297,7 @@ angular.module( "os-updater.controllers", [] )
 	};
 
 	// Github API to get releases for OpenSprinkler firmware
-	$http.get( "https://api.github.com/repos/opensprinkler/opensprinkler-firmware/releases" ).then( function( releases ) {
+	$http.get( githubRelease ).then( function( releases ) {
 
 		var line;
 
