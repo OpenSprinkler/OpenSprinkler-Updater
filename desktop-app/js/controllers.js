@@ -89,6 +89,14 @@ angular.module( "os-updater.controllers", [] )
 						template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
 							"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>"
 					} );
+				} else if ( !matchFound && platform === "osx" && ( task.type === "v2.2" ) ) {
+					if ( platform === "osx" ) {
+						$ionicPopup.alert( {
+							title: "OpenSprinkler Drivers",
+							template: "<p class='center'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed." +
+								"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>"
+						} );
+					}
 				}
 
 				// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
@@ -412,8 +420,6 @@ angular.module( "os-updater.controllers", [] )
 			scanTotal = 0,
 			item, pid, vid, port, device;
 
-		$scope.driverMessage = "";
-
 		// Parse every USB devices detected
 		for ( device in devices ) {
 			if ( devices.hasOwnProperty( device ) ) {
@@ -498,12 +504,6 @@ angular.module( "os-updater.controllers", [] )
 
 		if ( scanTotal === 0 ) {
 			cleanUp();
-
-			if ( platform === "osx" ) {
-
-				// Suggest drivers may be needed when no devices are found
-				$scope.driverMessage = "OpenSprinkler v2.2 and newer require drivers for OS X and can be obtained from <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.";
-			}
 		}
 	}
 
