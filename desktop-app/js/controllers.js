@@ -14,7 +14,10 @@ var exec = require( "child_process" ).exec,
 	githubAPI = "https://api.github.com/repos/opensprinkler/OpenSprinkler-Compiled-Firmware/contents/",
 
 	// Define regex to match dot seperated release name, eg: 2.1.5
-	releaseNameFilter = /\d\.\d\.\d/g;
+	releaseNameFilter = /\d\.\d\.\d/g,
+
+	// Define regex to match for device ID fields (PID and VID)
+	deviceIDFilter = /^0x([\d\w]+)$/;
 
 // Load controller for home page of the application
 angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function( $scope, $ionicPopup, $http ) {
@@ -467,17 +470,17 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 			// If a valid VID is present then process it
 			if ( item[0] ) {
-				vid = item[0].match( /^0x([\d\w]+)$/ )[1].toLowerCase();
+				vid = item[0].match( deviceIDFilter )[1].toLowerCase();
 			}
 
 			// If a valid PID is present then process it
 			if ( item[1] ) {
-				pid = item[1].match( /^0x([\d\w]+)$/ )[1].toLowerCase();
+				pid = item[1].match( deviceIDFilter )[1].toLowerCase();
 			}
 
 			// If a location is provided then try to match it to the corresponding device
 			if ( item[2] ) {
-				port = item[2].split( "/" )[0].trim().replace( /^0x([\d\w]+)$/, "$1" ).substr( 0, 4 );
+				port = item[2].split( "/" )[0].trim().replace( deviceIDFilter, "$1" ).substr( 0, 4 );
 				port = findPort( ports, port );
 			}
 
