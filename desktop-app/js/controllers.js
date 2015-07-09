@@ -447,14 +447,14 @@ angular.module( "os-updater.controllers", [] )
 					// The script returns each detected device is a comma delimited value
 					// which is in the following format: Platform,Device Name,Device PID/VID
 					item = devices[device].split( "," );
-					pid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
-					if ( pid ) {
-						pid = pid[1].toLowerCase();
-					}
-
-					vid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
+					vid = item[2] ? item[2].match( /pid_([\d\w]+)/i ) : "";
 					if ( vid ) {
 						vid = vid[1].toLowerCase();
+					}
+
+					pid = item[2] ? item[2].match( /vid_([\d\w]+)/i ) : "";
+					if ( pid ) {
+						pid = pid[1].toLowerCase();
 					}
 
 					port = item[1] ? item[1].match( /COM(\d+)/i ) : "";
@@ -464,7 +464,7 @@ angular.module( "os-updater.controllers", [] )
 				}
 
 				// Match OpenSprinkler v2.0 PID and VID and flag it for missing driver if no response from AVRDUDE
-				if ( vid === "0c9f" && pid === "1781" ) {
+				if ( pid === "1781" && vid === "0c9f" ) {
 					scanQueue.push( { type: "v2.0" }, addDevice );
 					scanTotal++;
 				}
