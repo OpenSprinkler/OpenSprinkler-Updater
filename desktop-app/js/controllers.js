@@ -530,9 +530,8 @@ angular.module( "os-updater.controllers", [] )
 
 	function getMatchVersion( result, usePort ) {
 		var device;
-
 		for ( device in deviceList ) {
-			if ( deviceList.hasOwnProperty( device ) && deviceList[device].usePort && new RegExp( deviceList[device].id ).source === result ) {
+			if ( deviceList.hasOwnProperty( device ) && new RegExp( deviceList[device].id ).source === result && !!deviceList[device].usePort === usePort ) {
 				return device;
 			}
 		}

@@ -15,7 +15,7 @@ module.exports = function( grunt ) {
 			}
 		},
 
-		github_releaser: {
+		"github-release": {
 			options: {
 				repository: "salbahra/OpenSprinkler-FW-OpenSprinkler",
 				auth: {
