@@ -1,4 +1,4 @@
-<img align="left" height="150" src="http://albahra.com/opensprinkler/icon-new.png"><h3>&nbsp;OpenSprinkler Firmware Updater <sup><img src="http://vb.teelaun.ch/salbahra/OpenSprinkler-FW-Updater.svg"></sup></h3>
+<img align="left" height="150" src="http://albahra.com/opensprinkler/icon-new.png"><h3>&nbsp;OpenSprinkler Firmware Updater [![GitHub version](https://badge.fury.io/gh/salbahra%2FOpenSprinkler-FW-Updater.svg)](http://badge.fury.io/gh/salbahra%2FOpenSprinkler-FW-Updater)</h3>
 &nbsp;[![Build Status](https://api.travis-ci.org/salbahra/OpenSprinkler-FW-Updater.svg?branch=master)](https://travis-ci.org/) [![Coverage Status](https://coveralls.io/repos/salbahra/OpenSprinkler-FW-Updater/badge.svg?branch=master)](https://codecov.io/github/salbahra/OpenSprinkler-FW-Updater?branch=master) [![devDependency Status](https://david-dm.org/salbahra/OpenSprinkler-FW-Updater/dev-status.svg)](https://david-dm.org/salbahra/OpenSprinkler-FW-Updater#info=devDependencies)  
 &nbsp;[Official Site][official] | [Support][help] | [Changelog][changelog]  
 <br>
