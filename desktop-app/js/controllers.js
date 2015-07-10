@@ -18,7 +18,7 @@ var exec = require( "child_process" ).exec,
 
 	// Define regex to match for device ID fields (PID and VID)
 	deviceIDFilter = /^0x([\d\w]+)$/,
-	commandPrefix, deviceList;
+	config, commandPrefix, deviceList;
 
 // Load configuration from config.json
 loadConfiguration();
@@ -589,11 +589,10 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 		$http.get( config.githubConfigDownload + "desktop-app/config.json" ).then(
 			function( result ) {
-				fs.writeFile( "config.json", JSON.stringify( result.data, null, 4 ), function() {
-					loadConfiguration();
-					cleanUp();
-					callback();
-				} );
+				fs.writeFileSync( "config.json", JSON.stringify( result.data, null, 4 ) );
+				loadConfiguration();
+				$scope.button.disabled = false;
+				callback();
 			},
 			function() {
 				cleanUp();
@@ -631,11 +630,11 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 function loadConfiguration() {
 
 	// Import configuration located in config.json
-	config = JSON.parse( fs.readFileSync( "config.json", "utf8" ) ),
+	config = JSON.parse( fs.readFileSync( "config.json", "utf8" ) );
 
 	// Load local variables from configuration
-	commandPrefix = replaceVariables( config.commandPrefix ),
-	deviceList = config.deviceList
+	commandPrefix = replaceVariables( config.commandPrefix );
+	deviceList = config.deviceList;
 }
 
 function replaceVariables( object ) {
