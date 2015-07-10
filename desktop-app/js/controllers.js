@@ -90,7 +90,9 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	scanQueue.drain = cleanUp;
 
 	// Define object to carry properties for home page buttons
-	$scope.button = {};
+	$scope.button = {
+		disabled: 0
+	};
 
 	$scope.startApp = function() {
 
@@ -110,11 +112,13 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 			// Indicate a device scan is underway
 			$scope.button.text = "Checking for devices...";
-			$scope.button.disabled = true;
-		} else if ( $scope.button.disabled === true ) {
+			$scope.button.disabled++;
+		} else if ( $scope.button.disabled ) {
 
 			// Return if the auto-refresh timer triggers a new scan while updating a device
 			return;
+		} else {
+			$scope.button.disabled++;
 		}
 
 		// Begin scanning for available serial ports
@@ -160,12 +164,13 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	// Method to handle the update process for OpenSprinkler
 	$scope.updateAction = function( type, port ) {
 
+		$scope.button.disabled++;
+
 		// Define the actual update subroutine which will run after the confirmation to continue
 		var update = function( version ) {
 
 				// Disable the page buttons and update the status text
 				$scope.updateLog = "";
-				$scope.button.disabled = true;
 				$scope.button.text = "Updating OpenSprinkler " + type + "...";
 
 				// Run the download process to first grab the required file then subsequently update the device
@@ -255,6 +260,8 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				} ).then( function( result ) {
 					if ( result ) {
 						update( $scope.selectedFirmware || $scope.latestRelease.name );
+					} else {
+						cleanUp();
 					}
 				} );
 			},
@@ -579,21 +586,27 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 			// Restore the buttons to their default state
 			$scope.button.text = "Check for new devices";
-			$scope.button.disabled = false;
+			$scope.button.disabled--;
+			if ( $scope.button.disabled < 0 ) {
+				$scope.button.disabled = 0;
+			}
 			$scope.$apply();
 		}, 500 );
 	}
 
 	function updateConfiguration( callback ) {
 
-		$scope.button.disabled = true;
+		$scope.button.disabled++;
 		$scope.button.text = "Updating supported device list...";
 
 		$http.get( config.githubConfigDownload + "desktop-app/config.json" ).then(
 			function( result ) {
 				fs.writeFileSync( "config.json", JSON.stringify( result.data, null, 4 ) );
 				loadConfiguration();
-				$scope.button.disabled = false;
+				$scope.button.disabled--;
+				if ( $scope.button.disabled < 0 ) {
+					$scope.button.disabled = 0;
+				}
 				callback();
 			},
 			function() {
