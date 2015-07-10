@@ -10,46 +10,6 @@ var exec = require( "child_process" ).exec,
 	// Get the architecture type
 	arch = process.arch === "x64" ? "64" : "32",
 
-	// Defines the base command to AVRDUDE per platform
-	commandPrefix = {
-		win: cwd + "\\avr\\win\\avrdude.exe -C " + cwd + "\\avr\\win\\avrdude.conf ",
-		osx: cwd + "/avr/osx/avrdude -C " + cwd + "/avr/osx/avrdude.conf ",
-		linux: cwd + "/avr/linux" + arch + "/avrdude -C " + cwd + "/avr/linux" + arch + "/avrdude.conf "
-	},
-
-	// Defines the available devices, their CPU signature and base command
-	deviceList = {
-		"v2.0": {
-			id: /0x1e96/g,
-			command: "-c usbtiny -p m644 "
-		},
-		"v2.1": {
-			id: /0x1e96/g,
-			command: "-c usbasp -p m644 "
-		},
-		"v2.2": {
-			id: /0x1e96/g,
-
-			// Indicates a serial port must be specified to interface with this device
-			usePort: true,
-			command: "-c arduino -p m644p -b 115200 "
-		},
-		"v2.3": {
-			id: /0x1e97/g,
-			usePort: true,
-			command: "-c arduino -p m1284p -b 115200 "
-		}
-	},
-
-	// Define Github directory to use for firmware download
-	githubDownload = "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Compiled-Firmware/master/",
-
-	// Define Github API endpoint to request latest firmware release
-	githubRelease = "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Firmware/releases",
-
-	// Github API endpoint to request available firmware versions
-	githubAPI = "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Compiled-Firmware/contents/",
-
 	// Default platform is Linux unless otherwise detected below
 	platform = "linux",
 
@@ -57,7 +17,14 @@ var exec = require( "child_process" ).exec,
 	releaseNameFilter = /\d\.\d\.\d/g,
 
 	// Define regex to match for device ID fields (PID and VID)
-	deviceIDFilter = /^0x([\d\w]+)$/;
+	deviceIDFilter = /^0x([\d\w]+)$/,
+
+	// Import configuration located in config.json
+	config = JSON.parse( fs.readFileSync( "config.json", "utf8" ) ),
+
+	// Load local variables from configuration
+	commandPrefix = replaceVariables( config.commandPrefix ),
+	deviceList = config.deviceList;
 
 // Change the platform to the appropriate value
 if ( /^win/.test( process.platform ) ) {
@@ -79,7 +46,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		var device = deviceList[task.type],
 
 			// Assign the signature filter to be used for scanning purposes
-			filter = task.filter || device.id,
+			filter = task.filter || new RegExp( device.id, "g" ),
 
 			// Generate command to probe for device version
 			command = commandPrefix[platform] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command;
@@ -312,7 +279,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	};
 
 	// Github API to get releases for OpenSprinkler firmware
-	$http.get( githubRelease ).then( function( releases ) {
+	$http.get( config.githubRelease ).then( function( releases ) {
 
 		var line;
 
@@ -369,7 +336,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		var fileList = [];
 
 		// Download the firmware
-		$http.get( githubAPI + device ).then(
+		$http.get( config.githubAPI + device ).then(
 			function( files ) {
 				var name, file;
 
@@ -395,7 +362,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	function downloadFirmware( device, version, callback ) {
 
 		// The default URL to grab compiled firmware will be the Github repository
-		var url = githubDownload + device + "/firmware" + version + ".hex";
+		var url = config.githubDownload + device + "/firmware" + version + ".hex";
 
 		// If the directory for the hardware type doesn't exist then create it
 		if ( !fs.existsSync( cwd + "/firmwares" ) ) {
@@ -577,7 +544,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 		for ( device in deviceList ) {
 			if ( deviceList.hasOwnProperty( device ) && deviceList[device].usePort === true ) {
-				regex.push( new RegExp( deviceList[device].id ).source );
+				regex.push( deviceList[device].id );
 			}
 		}
 
@@ -588,7 +555,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		var device;
 		for ( device in deviceList ) {
 			/*jshint -W018 */
-			if ( deviceList.hasOwnProperty( device ) && new RegExp( deviceList[device].id ).source === result && !!deviceList[device].usePort === usePort ) {
+			if ( deviceList.hasOwnProperty( device ) && deviceList[device].id === result && !!deviceList[device].usePort === usePort ) {
 				return device;
 			}
 			/*jshint +W018 */
@@ -632,3 +599,15 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		return ( date.getMonth() + 1 ) + "/" + date.getDate() + "/" + date.getFullYear();
 	}
 } );
+
+function replaceVariables( object ) {
+	var item;
+
+	for ( item in object ) {
+		if ( object.hasOwnProperty( item ) ) {
+			object[item] = object[item].replace( /%%cwd%%/g, cwd ).replace( /%%arch%%/g, arch );
+		}
+	}
+
+	return object;
+}
