@@ -104,16 +104,18 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	};
 
 	// Method to scan for and find all connected devices (bound to check for devices button)
-	$scope.checkDevices = function() {
+	$scope.checkDevices = function( isAuto ) {
 
-		// Return if the auto-refresh timer triggers a new scan while updating a device
-		if ( $scope.button.disabled === true ) {
+		if ( !isAuto ) {
+
+			// Indicate a device scan is underway
+			$scope.button.text = "Checking for devices...";
+			$scope.button.disabled = true;
+		} else if ( $scope.button.disabled === true ) {
+
+			// Return if the auto-refresh timer triggers a new scan while updating a device
 			return;
 		}
-
-		// Indicate a device scan is underway
-		$scope.button.text = "Checking for devices...";
-		$scope.button.disabled = true;
 
 		// Begin scanning for available serial ports
 		if ( platform === "osx" ) {
@@ -336,7 +338,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 	// Perform a scan for new devices every 5 seconds while the app is open
 	setInterval( function() {
-		$scope.checkDevices();
+		$scope.checkDevices( true );
 	}, 5000 );
 
 	// Method to query Github for all available firmware versions for a particular device type
