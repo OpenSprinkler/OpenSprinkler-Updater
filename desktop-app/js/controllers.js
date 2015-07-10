@@ -64,19 +64,11 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 					template: "<p class='center'>USB access on Linux requires root permission. Please re-run the application using sudo.</p>"
 				} );
 			} else if ( !matchFound && platform === "win" && ( task.type === "v2.0" || task.type === "v2.1" ) ) {
-				$ionicPopup.alert( {
-					title: "OpenSprinkler Drivers",
-					template: "<p class='center'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
-						"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>"
-				} );
+				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
+					"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>"
 			} else if ( !matchFound && platform === "osx" && ( task.type === "v2.2" ) ) {
-				if ( platform === "osx" ) {
-					$ionicPopup.alert( {
-						title: "OpenSprinkler Drivers",
-						template: "<p class='center'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed." +
-							"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>"
-					} );
-				}
+				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed." +
+					"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>"
 			}
 
 			// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
@@ -237,7 +229,8 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 					}
 
 					// Clean up the page buttons after update completion
-					cleanUp();
+					// Wait 10 seconds for the EEPROM to erase
+					setTimeout( cleanUp, 10000 );
 				} );
 			},
 			confirmUpdate = function( versions ) {
@@ -417,6 +410,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			item, device;
 
 		$scope.deviceList = [];
+		$scope.driverMessage = "";
 
 		// Parse every USB devices detected
 		for ( device in devices ) {

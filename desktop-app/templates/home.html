@@ -3,6 +3,12 @@
         <img src="img/logo.svg">
     </ion-nav-title>
     <ion-content class="padding">
+        <div class="list card" ng-hide="!driverMessage">
+            <div class="item item-divider">OpenSprinkler Drivers</div>
+            <div class="item item-body" ng-bind-html="driverMessage">
+            </div>
+        </div>
+
         <div class="list card">
 
             <div class="item item-divider">Connected Devices</div>
@@ -10,7 +16,7 @@
 
                 <div class="center">
 
-                    <ion-spinner ng-class="{ hidden: button.disabled || deviceList.length }"></ion-spinner>
+                    <ion-spinner ng-class="{ hidden: button.disabled === 0 || deviceList.length }"></ion-spinner>
 
                     <div ng-repeat="device in deviceList">
 

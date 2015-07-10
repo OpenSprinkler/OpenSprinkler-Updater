@@ -30,3 +30,8 @@
 	margin-left: -15px;
 	padding: 5px;
 }
+
+/* Driver message box style */
+.driverMessage {
+	margin-top:0 !important;
+}
