@@ -13,18 +13,15 @@ var exec = require( "child_process" ).exec,
 	// Default platform is Linux unless otherwise detected below
 	platform = "linux",
 
-	// Define regex to match dot seperated release name, eg: 2.1.5
+	// Define regex to match dot separated release name, eg: 2.1.5
 	releaseNameFilter = /\d\.\d\.\d/g,
 
 	// Define regex to match for device ID fields (PID and VID)
 	deviceIDFilter = /^0x([\d\w]+)$/,
+	commandPrefix, deviceList;
 
-	// Import configuration located in config.json
-	config = JSON.parse( fs.readFileSync( "config.json", "utf8" ) ),
-
-	// Load local variables from configuration
-	commandPrefix = replaceVariables( config.commandPrefix ),
-	deviceList = config.deviceList;
+// Load configuration from config.json
+loadConfiguration();
 
 // Change the platform to the appropriate value
 if ( /^win/.test( process.platform ) ) {
@@ -94,6 +91,17 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 	// Define object to carry properties for home page buttons
 	$scope.button = {};
+
+	$scope.startApp = function() {
+
+		// Update the configuration from Github to check for new firmware versions
+		updateConfiguration( function() {
+
+			// Once the new configuration has been loaded, scan for new devices
+			$scope.checkDevices();
+		} );
+
+	};
 
 	// Method to scan for and find all connected devices (bound to check for devices button)
 	$scope.checkDevices = function() {
@@ -321,9 +329,9 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		// This is done because the permissions may not be preserved due to the packaging method
 		// and as a result will not run in distribution. OS X does not compress the files therefore
 		// this issue is not encountered.
-		exec( command, { timeout: 1000 }, $scope.checkDevices );
+		exec( command, { timeout: 1000 }, $scope.startApp );
 	} else {
-		$scope.checkDevices();
+		$scope.startApp();
 	}
 
 	// Perform a scan for new devices every 5 seconds while the app is open
@@ -362,7 +370,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	function downloadFirmware( device, version, callback ) {
 
 		// The default URL to grab compiled firmware will be the Github repository
-		var url = config.githubDownload + device + "/firmware" + version + ".hex";
+		var url = config.githubFirmwareDownload + device + "/firmware" + version + ".hex";
 
 		// If the directory for the hardware type doesn't exist then create it
 		if ( !fs.existsSync( cwd + "/firmwares" ) ) {
@@ -574,6 +582,26 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		}, 500 );
 	}
 
+	function updateConfiguration( callback ) {
+
+		$scope.button.disabled = true;
+		$scope.button.text = "Updating supported device list...";
+
+		$http.get( config.githubConfigDownload + "desktop-app/config.json" ).then(
+			function( result ) {
+				fs.writeFile( "config.json", JSON.stringify( result.data, null, 4 ), function() {
+					loadConfiguration();
+					cleanUp();
+					callback();
+				} );
+			},
+			function() {
+				cleanUp();
+				callback();
+			}
+		);
+	}
+
 	function networkFail() {
 		console.log( "Network failure..." );
 	}
@@ -599,6 +627,16 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		return ( date.getMonth() + 1 ) + "/" + date.getDate() + "/" + date.getFullYear();
 	}
 } );
+
+function loadConfiguration() {
+
+	// Import configuration located in config.json
+	config = JSON.parse( fs.readFileSync( "config.json", "utf8" ) ),
+
+	// Load local variables from configuration
+	commandPrefix = replaceVariables( config.commandPrefix ),
+	deviceList = config.deviceList
+}
 
 function replaceVariables( object ) {
 	var item;
