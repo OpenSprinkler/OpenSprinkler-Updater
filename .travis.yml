@@ -1,6 +1,5 @@
 bundler_args: --retry 3
-os: osx
-language: node_js
+language: objective-c
 before_install:
  - export TZ=America/Chicago
  - npm install -g grunt-cli
