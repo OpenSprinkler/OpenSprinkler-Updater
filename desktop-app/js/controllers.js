@@ -65,10 +65,10 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				} );
 			} else if ( !matchFound && platform === "win" && ( task.type === "v2.0" || task.type === "v2.1" ) ) {
 				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
-					"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>"
+					"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>";
 			} else if ( !matchFound && platform === "osx" && ( task.type === "v2.2" ) ) {
 				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed." +
-					"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>"
+					"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>";
 			}
 
 			// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
