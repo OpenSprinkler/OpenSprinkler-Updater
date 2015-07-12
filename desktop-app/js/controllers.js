@@ -231,6 +231,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 					// Clean up the page buttons after update completion
 					// Wait 10 seconds for the EEPROM to erase
 					setTimeout( cleanUp, 10000 );
+					$scope.button.text = "OpenSprinkler " + type + " is rebooting...";
 				} );
 			},
 			confirmUpdate = function( versions ) {
