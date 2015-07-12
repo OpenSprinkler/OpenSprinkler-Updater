@@ -214,10 +214,17 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 					// Process results once the download and update process has completed. If the status was successful indicate so to the user.
 					if ( results.status ) {
-						$ionicPopup.alert( {
-							title: "OpenSprinkler " + type + " Update",
-							template: "<p class='center'>The firmware update was successful and the device is rebooting. Please note the device will be restored to its factory settings.</p>"
-						} );
+						$scope.button.text = "OpenSprinkler " + type + " is rebooting...";
+						$scope.$apply();
+
+						// Clean up the page buttons after update completion
+						// Wait 10 seconds for the EEPROM to erase
+						setTimeout( function() {
+							$ionicPopup.alert( {
+								title: "OpenSprinkler " + type + " Update",
+								template: "<p class='center'>The firmware update was successful. Please note the device will be restored to its factory settings.</p>"
+							} ).then( cleanUp );
+						}, 15000 );
 					} else {
 
 						// Otherwise, let the user know it failed
@@ -227,11 +234,6 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 							"Please review the log output and try again or <a target='_blank' href='https://support.opensprinkler.com'>contact support</a> if you continue to have problems.</p>"
 						} );
 					}
-
-					// Clean up the page buttons after update completion
-					// Wait 10 seconds for the EEPROM to erase
-					setTimeout( cleanUp, 15000 );
-					$scope.button.text = "OpenSprinkler " + type + " is rebooting...";
 				} );
 			},
 			confirmUpdate = function( versions ) {
