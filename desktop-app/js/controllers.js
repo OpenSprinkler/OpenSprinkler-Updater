@@ -232,7 +232,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 							title: "OpenSprinkler " + type + " Update",
 							template: "<p class='center'>The firmware update was <strong>NOT</strong> successful.<br><br>" +
 							"Please review the log output and try again or <a target='_blank' href='https://support.opensprinkler.com'>contact support</a> if you continue to have problems.</p>"
-						} );
+						} ).then( cleanUp );
 					}
 				} );
 			},
