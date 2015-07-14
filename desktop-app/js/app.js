@@ -19,7 +19,7 @@ if ( process.platform === "darwin" ) {
 // Show the main window once the app has loaded
 onload = function() {
 	gui.Window.get().show();
-}
+};
 
 angular.module( "os-updater", [ "ionic", "os-updater.controllers" ] )
 
