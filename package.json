@@ -1,5 +1,5 @@
 {
-  "name": "os-firmware-updater",
+  "name": "OpenSprinkler-Firmware-Updater",
   "version": "1.0.0",
   "description": "OpenSprinkler Firmware Updater application",
   "main": "build.js",
@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/OpenSprinkler/Firmware-Updater.git"
+    "url": "https://github.com/OpenSprinkler/OpenSprinkler-Firmware-Updater.git"
   },
   "author": "@salbahra",
   "bugs": {
-    "url": "https://github.com/OpenSprinkler/Firmware-Updater/issues"
+    "url": "https://github.com/OpenSprinkler/OpenSprinkler-Firmware-Updater/issues"
   },
-  "homepage": "https://github.com/OpenSprinkler/Firmware-Updater",
+  "homepage": "https://github.com/OpenSprinkler/OpenSprinkler-Firmware-Updater",
   "devDependencies": {
     "appdmg": "^0.3.1",
     "archiver": "^0.14.4",

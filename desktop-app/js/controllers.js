@@ -231,7 +231,11 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 						$ionicPopup.alert( {
 							title: "OpenSprinkler " + type + " Update",
 							template: "<p class='center'>The firmware update was <strong>NOT</strong> successful.<br><br>" +
-							"Please review the log output and try again or <a target='_blank' href='https://support.opensprinkler.com'>contact support</a> if you continue to have problems.</p>"
+							"Please review the log output and try again or " +
+							"<a target='_blank' href='https://opensprinkler.freshdesk.com/widgets/feedback_widget/new?&widgetType=popup&screenshot=no&attachFile=no&formTitle=Help%20%26%20Support'>" +
+								"contact support" +
+							"</a>" +
+							" if you continue to have problems.</p>"
 						} ).then( cleanUp );
 					}
 				} );

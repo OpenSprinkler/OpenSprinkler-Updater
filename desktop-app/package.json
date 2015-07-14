@@ -1,5 +1,5 @@
 {
-  "name": "OpenSprinkler-FW-Updater",
+  "name": "OpenSprinkler-Firmware-Updater",
   "version": "1.0.0",
   "main": "index.html",
   "window": {
@@ -10,7 +10,8 @@
     "fullscreen": false,
     "width": 450,
     "height": 450,
-    "position": "center"
+    "position": "center",
+    "show": false
   },
   "webkit": {
     "page-cache": true
