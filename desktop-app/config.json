@@ -1,6 +1,6 @@
 {
     "commandPrefix": {
-        "win": "%%cwd%%\\avr\\win\\avrdude.exe -C %%cwd%%\\avr\\win\\avrdude.conf ",
+        "win": "\"%%cwd%%\\avr\\win\\avrdude.exe\" -C \"%%cwd%%\\avr\\win\\avrdude.conf\" ",
         "osx": "%%cwd%%/avr/osx/avrdude -C %%cwd%%/avr/osx/avrdude.conf ",
         "linux": "%%cwd%%/avr/linux%%arch%%/avrdude -C %%cwd%%/avr/linux%%arch%%/avrdude.conf "
     },

@@ -2,6 +2,7 @@
 
 var exec = require( "child_process" ).exec,
 	async = require( "async" ),
+	path = require( "path" ),
 	fs = require( "fs" ),
 
 	// Get the current working directory
@@ -672,7 +673,7 @@ function replaceVariables( object ) {
 
 	for ( item in object ) {
 		if ( object.hasOwnProperty( item ) ) {
-			object[item] = object[item].replace( /%%cwd%%/g, cwd ).replace( /%%arch%%/g, arch );
+			object[item] = path.normalize( object[item].replace( /%%cwd%%/g, cwd ).replace( /%%arch%%/g, arch ) );
 		}
 	}
 
