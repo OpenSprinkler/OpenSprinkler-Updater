@@ -63,11 +63,11 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 					title: "OpenSprinkler Updater Permissions",
 					template: "<p class='center'>USB access on Linux requires root permission. Please re-run the application using sudo.</p>"
 				} );
-			} else if ( !matchFound && platform === "win" && ( task.type === "v2.0" || task.type === "v2.1" ) ) {
-				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed." +
+			} else if ( !matchFound && platform === "win" && ( task.type === "v2.0" ) ) {
+				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed. " +
 					"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>";
 			} else if ( !matchFound && platform === "osx" && ( task.type === "v2.2" ) ) {
-				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed." +
+				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed. " +
 					"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>";
 			}
 
@@ -228,6 +228,11 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 					} else {
 
 						// Otherwise, let the user know it failed
+						if ( platform === "win" && $scope.updateLog.indexOf( "could not find USB device \"USBasp\"" ) !== -1 ) {
+							$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.1 has been detected on your system however the required drivers are not installed. " +
+								"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>";
+						}
+
 						$ionicPopup.alert( {
 							title: "OpenSprinkler " + type + " Update",
 							template: "<p class='center'>The firmware update was <strong>NOT</strong> successful.<br><br>" +
@@ -420,6 +425,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 		$scope.deviceList = [];
 		$scope.driverMessage = "";
+		$scope.updateLog = "";
 
 		// Parse every USB devices detected
 		for ( device in devices ) {
@@ -444,6 +450,12 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 				// Detected hardware v2.2 or v2.3 and correlate the port value to the location
 				if ( item.vid === "1a86" && item.pid === "7523" ) {
+					if ( platform === "win" && !item.port ) {
+						$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.2+ has been detected on your system however the required drivers are not installed. " +
+							"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser.exe'>http://raysfiles.com/drivers/ch341ser.exe</a>.</p>";
+						continue;
+					}
+
 					console.log( "Found a possible match located at: " + item.port );
 
 					scanQueue.push( { type: "v2.2", filter: usePortFilter, port: item.port }, addDevice );
