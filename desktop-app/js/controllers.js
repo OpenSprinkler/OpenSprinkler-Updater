@@ -343,10 +343,12 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		$scope.startApp();
 	}
 
+	/*
 	// Perform a scan for new devices every 5 seconds while the app is open
 	setInterval( function() {
 		$scope.checkDevices( true );
 	}, 5000 );
+	*/
 
 	// Method to query Github for all available firmware versions for a particular device type
 	function getAvailableFirmwares( device, callback ) {
