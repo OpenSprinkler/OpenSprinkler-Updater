@@ -1,6 +1,7 @@
 /* global angular */
 
 var exec = require( "child_process" ).exec,
+	spawn = require( "child_process" ).spawn,
 	async = require( "async" ),
 	path = require( "path" ),
 	fs = require( "fs" ),
@@ -148,9 +149,19 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				parseDevices( stdout.split( "\n" ), null );
 			} );
 		} else if ( platform === "win" ) {
-			exec( "wmic path win32_pnpentity get caption, deviceid /format:csv", { timeout: 1000 }, function( error, stdout ) {
-				parseDevices( stdout.split( "\n" ), null );
+			var wmic = spawn( "wmic", [] ),
+				reply;
+
+			wmic.stdout.on( "data", function( data ) {
+				reply += data;
 			} );
+
+			wmic.on( "close", function() {
+				parseDevices( reply.split( "\n" ), null );
+			} );
+
+			wmic.stdin.end( "path win32_pnpentity get caption, deviceid /format:csv\n" );
+
 		}
 	};
 
