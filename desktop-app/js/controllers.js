@@ -34,6 +34,7 @@ if ( /^win/.test( process.platform ) ) {
 
 	// Detected OS X
 	platform = "osx";
+	cwd = cwd.replace( /\s/g, "\\ " );
 }
 
 // Load controller for home page of the application
