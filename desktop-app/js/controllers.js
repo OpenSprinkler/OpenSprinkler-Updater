@@ -65,10 +65,10 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 					title: "OpenSprinkler Updater Permissions",
 					template: "<p class='center'>USB access on Linux requires root permission. Please re-run the application using sudo.</p>"
 				} );
-			} else if ( !matchFound && platform === "win" && ( task.type === "v2.0" ) ) {
-				$scope.driver.type = "v2.0";
-			} else if ( !matchFound && platform === "osx" && ( task.type === "v2.2" ) ) {
-				$scope.driver.type = "v2.2";
+			} else if ( !matches && platform === "win" && task.type === "v2.0" ) {
+				$scope.driver = "v2.0";
+			} else if ( !matches && platform === "osx" && task.type === "v2.2" ) {
+				$scope.driver = "v2.2";
 			}
 
 			// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
@@ -239,7 +239,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 						// Otherwise, let the user know it failed
 						if ( platform === "win" && $scope.updateLog.indexOf( "could not find USB device \"USBasp\"" ) !== -1 ) {
-							$scope.driver.type = "v2.1";
+							$scope.driver = "v2.1";
 						}
 
 						$ionicPopup.alert( {
@@ -437,7 +437,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			item, device;
 
 		$scope.deviceList = [];
-		$scope.driver = {};
+		$scope.driver = "";
 		$scope.updateLog = "";
 
 		// Parse every USB devices detected
@@ -464,7 +464,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				// Detected hardware v2.2 or v2.3 and correlate the port value to the location
 				if ( item.vid === "1a86" && item.pid === "7523" ) {
 					if ( platform === "win" && !item.port ) {
-						$scope.driver.type = "v2.2+";
+						$scope.driver = "v2.2+";
 						continue;
 					}
 
