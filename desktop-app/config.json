@@ -1,8 +1,8 @@
 {
     "commandPrefix": {
         "win": "\"%%cwd%%\\avr\\win\\avrdude.exe\" -C \"%%cwd%%\\avr\\win\\avrdude.conf\" ",
-        "osx": "%%cwd%%/avr/osx/avrdude -C %%cwd%%/avr/osx/avrdude.conf ",
-        "linux": "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:%%cwd%%/avr/linux%%arch%%\";%%cwd%%/avr/linux%%arch%%/avrdude -C %%cwd%%/avr/linux%%arch%%/avrdude.conf "
+        "osx": "\"%%cwd%%/avr/osx/avrdude\" -C \"%%cwd%%/avr/osx/avrdude.conf\" ",
+        "linux": "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:%%cwd%%/avr/linux%%arch%%\";\"%%cwd%%/avr/linux%%arch%%/avrdude\" -C \"%%cwd%%/avr/linux%%arch%%/avrdude.conf\" "
     },
     "deviceList": {
         "v2.0": {
