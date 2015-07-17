@@ -30,7 +30,7 @@ var appName = "OpenSprinkler Updater",
 			}
 		} );
 
-		output = fs.createWriteStream( "./build/" + appName + " " + task.platform + "." + type + ( task.platform === "win32" ? "" : ".gz" ) );
+		output = fs.createWriteStream( "./build/" + appName.replace( /\s/g, "-" ) + "-" + task.platform + "." + type + ( task.platform === "win32" ? "" : ".gz" ) );
 
 		output.on( "close", function() {
 			console.log( "Package for " + task.platform + " completed successfully (" + ( archive.pointer() / 1000000 ).toFixed( 2 ) + "MB)" );
@@ -103,7 +103,7 @@ function createNW( callback ) {
 function createDMG( callback ) {
 	console.log( "Creating package for osx..." );
 
-	var location = "./build/" + appName + ".dmg";
+	var location = "./build/" + appName.replace( /\s/g, "-" ) + ".dmg";
 
 	if ( fs.existsSync( location ) ) {
 		fs.unlinkSync( location );
