@@ -24,8 +24,8 @@
             "command": "-c arduino -p m1284p -b 115200 "
         }
     },
-    "githubConfigDownload": "https://raw.githubusercontent.com/salbahra/OpenSprinkler-Firmware-Updater/master/",
+    "githubConfigDownload": "https://raw.githubusercontent.com/salbahra/OpenSprinkler-Updater/master/",
+    "githubAPI": "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Compiled-Firmware/contents/",
     "githubFirmwareDownload": "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Compiled-Firmware/master/",
-    "githubRelease": "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Firmware/releases",
-    "githubAPI": "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Compiled-Firmware/contents/"
+    "githubRelease": "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Firmware/releases"
 }
