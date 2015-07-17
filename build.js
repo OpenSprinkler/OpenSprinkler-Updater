@@ -1,6 +1,6 @@
 // Define application name for packaged files
 var appName = "OpenSprinkler Updater",
-	NwBuilder = require( "node-webkit-builder" ),
+	NwBuilder = require( "nw-builder" ),
 	appPkg = require( "./desktop-app/package.json" ),
 	fs = require( "fs" ),
 	async = require( "async" ),
