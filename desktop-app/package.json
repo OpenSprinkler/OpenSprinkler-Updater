@@ -1,9 +1,9 @@
 {
-  "name": "OpenSprinkler-Firmware-Updater",
+  "name": "OpenSprinkler-Updater",
   "version": "1.0.0",
   "main": "index.html",
   "window": {
-    "title": "OpenSprinkler Firmware Updater",
+    "title": "OpenSprinkler Updater",
     "icon": "img/icon.png",
     "toolbar": false,
     "resizable": true,

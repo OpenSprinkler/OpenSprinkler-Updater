@@ -1,5 +1,5 @@
 // Define application name for packaged files
-var appName = "OpenSprinkler-FW-Updater",
+var appName = "OpenSprinkler Updater",
 	NwBuilder = require( "node-webkit-builder" ),
 	appPkg = require( "./desktop-app/package.json" ),
 	fs = require( "fs" ),

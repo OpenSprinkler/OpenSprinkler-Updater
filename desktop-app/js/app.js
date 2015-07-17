@@ -1,6 +1,6 @@
 /* global angular */
 
-// OpenSprinkler-Firmware-Updater
+// OpenSprinkler Updater
 // Samer Albahra
 
 // Since we are using Node Webkit, require the GUI module
@@ -10,7 +10,7 @@ var gui = require( "nw.gui" ),
 // On OS X add a menu bar configuration
 if ( process.platform === "darwin" ) {
     var nativeMenuBar = new gui.Menu( { type: "menubar" } );
-    nativeMenuBar.createMacBuiltin( "OpenSprinkler Firmware Updater", {
+    nativeMenuBar.createMacBuiltin( "OpenSprinkler Updater", {
       hideEdit: true
     } );
     win.menu = nativeMenuBar;

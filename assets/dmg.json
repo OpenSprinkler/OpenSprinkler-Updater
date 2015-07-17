@@ -1,10 +1,10 @@
 {
-  "title": "OpenSprinkler FW Updater",
+  "title": "OpenSprinkler Updater",
   "icon": "mac.icns",
   "background": "dmgbg.png",
   "icon-size": 120,
   "contents": [
     { "x": 340, "y": 150, "type": "link", "path": "/Applications" },
-    { "x": 120, "y": 150, "type": "file", "path": "../build/OpenSprinkler-FW-Updater/osx32/OpenSprinkler-FW-Updater.app" }
+    { "x": 120, "y": 150, "type": "file", "path": "../build/OpenSprinkler Updater/osx32/OpenSprinkler Updater.app" }
   ]
 }
