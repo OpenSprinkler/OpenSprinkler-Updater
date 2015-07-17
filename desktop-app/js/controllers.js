@@ -34,7 +34,6 @@ if ( /^win/.test( process.platform ) ) {
 
 	// Detected OS X
 	platform = "osx";
-	cwd = cwd.replace( /\s/g, "\\ " );
 }
 
 // Load controller for home page of the application
@@ -681,11 +680,17 @@ function loadConfiguration() {
 }
 
 function replaceVariables( object ) {
-	var item;
+	var dir, item;
+
+	if ( platform === "osx" ) {
+		dir = cwd.replace( /\s/g, "\\ " );
+	} else {
+		dir = cwd;
+	}
 
 	for ( item in object ) {
 		if ( object.hasOwnProperty( item ) ) {
-			object[item] = path.normalize( object[item].replace( /%%cwd%%/g, cwd ).replace( /%%arch%%/g, arch ) );
+			object[item] = path.normalize( object[item].replace( /%%cwd%%/g, dir ).replace( /%%arch%%/g, arch ) );
 		}
 	}
 
