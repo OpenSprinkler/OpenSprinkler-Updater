@@ -5,6 +5,8 @@ var exec = require( "child_process" ).exec,
 	async = require( "async" ),
 	path = require( "path" ),
 	fs = require( "fs" ),
+	gui = require( "nw.gui" ),
+	decompress = require( "decompress-zip" ),
 
 	// Get the current working directory
 	cwd = process.cwd(),
@@ -66,11 +68,9 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 					template: "<p class='center'>USB access on Linux requires root permission. Please re-run the application using sudo.</p>"
 				} );
 			} else if ( !matchFound && platform === "win" && ( task.type === "v2.0" ) ) {
-				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.0 has been detected on your system however the required drivers are not installed. " +
-					"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>";
+				$scope.driverMessage = "v2.0";
 			} else if ( !matchFound && platform === "osx" && ( task.type === "v2.2" ) ) {
-				$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.2 or newer has been detected on your system however the required drivers are not installed. " +
-					"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser_mac.zip'>http://raysfiles.com/drivers/ch341ser_mac.zip</a>.</p>";
+				$scope.driverMessage = "v2.2";
 			}
 
 			// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
@@ -241,8 +241,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 						// Otherwise, let the user know it failed
 						if ( platform === "win" && $scope.updateLog.indexOf( "could not find USB device \"USBasp\"" ) !== -1 ) {
-							$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.1 has been detected on your system however the required drivers are not installed. " +
-								"You may install them by following this link: <a href='http://raysfiles.com/drivers/zadig.zip'>http://raysfiles.com/drivers/zadig.zip</a>.</p>";
+							$scope.driverMessage = "v2.1";
 						}
 
 						$ionicPopup.alert( {
@@ -301,6 +300,17 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 	$scope.changeFirmwareSelection = function( fwv ) {
 		$scope.selectedFirmware = fwv;
+	};
+
+	// Method to install the driver for the specified platform
+	$scope.installDriver = function() {
+		if ( platform === "win" ) {
+
+		} else if ( platform === "osx" ) {
+			downloadDriver( "https://github.com/salbahra/OpenSprinkler-Updater/raw/master/drivers/osx.zip", "osx.zip", function( a ) {
+				gui.Shell.openItem( cwd + "/drivers/osx.pkg" );
+			} );
+		}
 	};
 
 	// Method to show the change log in a popup to the user
@@ -393,6 +403,32 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			}, networkFail );
 	}
 
+	// Method to download a file
+	function downloadDriver( url, file, callback ) {
+
+		// If the directory for the hardware type doesn't exist then create it
+		if ( !fs.existsSync( cwd + "/drivers" ) ) {
+			fs.mkdirSync( cwd + "/drivers" );
+		}
+
+		$http.get( url ).then( function( response ) {
+			fs.writeFile( cwd + "/drivers/" + file, response.data, function() {
+				var unzipper = new decompress( cwd + "/drivers/" + file )
+
+				unzipper.on( "extract", function() {
+					callback();
+				} );
+
+				unzipper.extract( {
+				    path: cwd + "/drivers/",
+				    filter: function( file ) {
+				        return file.type !== "SymbolicLink";
+				    }
+				} );
+			} );
+		} );
+	}
+
 	// Method to download a firmware based on the device and version.
 	// A callback is called once the download is completed indicated success or failure
 	function downloadFirmware( device, version, callback ) {
@@ -463,8 +499,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				// Detected hardware v2.2 or v2.3 and correlate the port value to the location
 				if ( item.vid === "1a86" && item.pid === "7523" ) {
 					if ( platform === "win" && !item.port ) {
-						$scope.driverMessage = "<p class='center driverMessage'>OpenSprinkler v2.2+ has been detected on your system however the required drivers are not installed. " +
-							"You may install them by following this link: <a href='http://raysfiles.com/drivers/ch341ser.exe'>http://raysfiles.com/drivers/ch341ser.exe</a>.</p>";
+						$scope.driverMessage = "v2.2+";
 						continue;
 					}
 

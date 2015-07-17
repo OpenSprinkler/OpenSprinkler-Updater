@@ -3,9 +3,13 @@
         <img src="img/logo.svg">
     </ion-nav-title>
     <ion-content class="padding">
-        <div class="list card" ng-hide="!driverMessage">
+        <div class="list card left" ng-hide="!driverMessage">
             <div class="item item-divider">OpenSprinkler Drivers</div>
-            <div class="item item-body" ng-bind-html="driverMessage">
+            <div class="item item-body item-button-right">
+                <p class="with-button">OpenSprinkler {{driverMessage}} has been detected on your system however the required drivers may not be installed.</p>
+                <button ng-click="installDriver()" class="button button-stable">
+                    Install
+                </button>
             </div>
         </div>
 

@@ -16,6 +16,10 @@
 .wide > .popup {
 	width: 60%;
 }
+.with-button {
+	margin: 0 !important;
+	width: 80%;
+}
 
 /* Changelog styles */
 .bullet-list {
@@ -29,9 +33,4 @@
 	font-size: large;
 	margin-left: -15px;
 	padding: 5px;
-}
-
-/* Driver message box style */
-.driverMessage {
-	margin-top:0 !important;
 }
