@@ -68,7 +68,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			} else if ( !matches && platform === "win" && task.type === "v2.0" ) {
 				$scope.driver = "v2.0";
 			} else if ( !matches && platform === "osx" && task.type === "v2.2" ) {
-				$scope.driver = "v2.2";
+				$scope.driver = "v2.2+";
 			}
 
 			// Delay the next scan by 200 milliseconds to avoid error accessing serial ports
