@@ -476,7 +476,6 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			}
 		}
 
-$scope.driver.type = "v2.1";
 		if ( scanTotal === 0 ) {
 			cleanUp();
 		}
