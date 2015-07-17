@@ -10,7 +10,7 @@ var exec = require( "child_process" ).exec,
 	cwd = process.cwd(),
 
 	// Get the architecture type
-	arch = process.arch === "x64" ? "64" : "32",
+	arch = /64/.test( process.arch ) ? "64" : "32",
 
 	// Default platform is Linux unless otherwise detected below
 	platform = "linux",
