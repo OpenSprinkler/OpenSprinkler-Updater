@@ -302,7 +302,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	};
 
 	$scope.downloadDriver = function() {
-		gui.Shell.openExternal( config.githubConfigDownload + "/drivers/" + platform + ( platform === "osx" ? ".pkg" : ".exe" ) );
+		gui.Shell.openExternal( config.githubConfigDownload + "drivers/" + platform + ( platform === "osx" ? ".pkg" : ".exe" ) );
 	};
 
 	// Method to show the change log in a popup to the user
