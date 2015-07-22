@@ -4,6 +4,7 @@ var exec = require( "child_process" ).exec,
 	spawn = require( "child_process" ).spawn,
 	async = require( "async" ),
 	path = require( "path" ),
+	gui = require( "nw.gui" ),
 	fs = require( "fs" ),
 
 	// Get the current working directory
@@ -301,7 +302,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	};
 
 	$scope.downloadDriver = function() {
-		window.open( config.githubConfigDownload + "/drivers/" + platform + ".zip", "_self" );
+		gui.Shell.openExternal( config.githubConfigDownload + "/drivers/" + platform + ( platform === "osx" ? ".pkg" : ".exe" ) );
 	};
 
 	// Method to show the change log in a popup to the user
