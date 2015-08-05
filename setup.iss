@@ -13,7 +13,7 @@ DefaultGroupName = OpenSprinkler
 Compression = lzma
 SolidCompression = yes
 OutputDir=build\
-OutputBaseFilename=OpenSprinkler-Updater-win32
+OutputBaseFilename=OpenSprinkler-Updater
 
 [Files]
 Source: "build\OpenSprinkler Updater\win32\*"; DestDir: "{app}"; Flags: replacesameversion recursesubdirs createallsubdirs

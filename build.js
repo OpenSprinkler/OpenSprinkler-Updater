@@ -4,6 +4,7 @@ var appName = "OpenSprinkler Updater",
 	appPkg = require( "./desktop-app/package.json" ),
 	fs = require( "fs" ),
 	async = require( "async" ),
+	exec = require( "child_process" ).exec,
 	archiver = require( "archiver" ),
 	nw = new NwBuilder( {
 	  files: "desktop-app/**",
@@ -65,10 +66,17 @@ nw.build()
     console.log( "All platforms have been built successfully!" );
     async.series( [
 		function( callback ) {
+			console.log( "Creating package for win32..." );
+			exec( "wine 'C:\\Program Files\\Inno Setup 5\\Compil32.exe' '/cc' 'setup.iss'", function() {
+				console.log( "Package for win32 completed successfully (" + ( fs.statSync( "./build/" + appName.replace( /\s/g, "-" ) + ".exe" ).size / 1000000 ).toFixed( 2 ) + "MB)" );
+				callback();
+			} );
+		},
+		function( callback ) {
 			createDMG( callback );
 		},
 		function( callback ) {
-			packageReleases( callback );
+			packageLinux( callback );
 		}
 	] );
   } )
@@ -125,8 +133,8 @@ function createDMG( callback ) {
 	} );
 }
 
-// Create the final zip and tar files for all platforms for distrbution
-function packageReleases() {
+// Create the final  tar files for the linux platform for distrbution
+function packageLinux() {
 	var platforms = [ "linux32", "linux64" ],
 		platform;
 
