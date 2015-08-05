@@ -127,7 +127,7 @@ function createDMG( callback ) {
 
 // Create the final zip and tar files for all platforms for distrbution
 function packageReleases() {
-	var platforms = [ "win32", "linux32", "linux64" ],
+	var platforms = [ "linux32", "linux64" ],
 		platform;
 
 	for ( platform in platforms ) {
