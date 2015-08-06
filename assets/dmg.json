@@ -5,6 +5,7 @@
   "icon-size": 120,
   "contents": [
     { "x": 340, "y": 150, "type": "link", "path": "/Applications" },
-    { "x": 120, "y": 150, "type": "file", "path": "../build/OpenSprinkler Updater/osx32/OpenSprinkler Updater.app" }
+    { "x": 120, "y": 150, "type": "file", "path": "../build/OpenSprinkler Updater/osx32/OpenSprinkler Updater.app" },
+    { "x": 230, "y": 350, "type": "file", "path": "../drivers/Install Drivers.pkg" }
   ]
 }

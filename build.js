@@ -117,6 +117,9 @@ function createDMG( callback ) {
 		fs.unlinkSync( location );
 	}
 
+	// Rename driver package in preparation for inclusion to disk image
+	fs.renameSync( "./drivers/osx.pkg", "./drivers/Install Drivers.pkg" );
+
 	var appdmg = require( "appdmg" ),
 		ee = appdmg( {
 			source: "./assets/dmg.json",
@@ -124,6 +127,10 @@ function createDMG( callback ) {
 		} );
 
 	ee.on( "finish", function() {
+
+		// Clean up by renaming OS X driver package back
+		fs.renameSync( "./drivers/Install Drivers.pkg", "./drivers/osx.pkg" );
+
 		console.log( "Package for osx completed successfully (" + ( fs.statSync( location ).size / 1000000 ).toFixed( 2 ) + "MB)"  );
 		callback();
 	} );
