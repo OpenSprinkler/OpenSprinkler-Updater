@@ -4,7 +4,7 @@
 <br>
 The OpenSprinkler firmware updater tool for Arduino based devices. This application supports OpenSprinkler v2.0, v2.1, v2.2 and v2.3.
 
-For install instructions please refer to the instructions on the support site at: https://opensprinkler.freshdesk.com/support/solutions/articles/5000381694
+For install instructions please refer to the instructions on the support site at: https://support.opensprinkler.com/support/solutions/articles/5000381694
 
 [official]: https://opensprinkler.com
 [help]: http://support.opensprinkler.com
