@@ -1,0 +1,31 @@
+{
+    "commandPrefix": {
+        "win": "\"%%cwd%%\\avr\\win\\avrdude.exe\" -C \"%%cwd%%\\avr\\win\\avrdude.conf\" ",
+        "osx": "%%cwd%%/avr/osx/avrdude -C %%cwd%%/avr/osx/avrdude.conf ",
+        "linux": "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:%%cwd%%/avr/linux%%arch%%\";%%cwd%%/avr/linux%%arch%%/avrdude -C %%cwd%%/avr/linux%%arch%%/avrdude.conf "
+    },
+    "deviceList": {
+        "v2.0": {
+            "id": "0x1e96",
+            "command": "-c usbtiny -p m644 "
+        },
+        "v2.1": {
+            "id": "0x1e96",
+            "command": "-c usbasp -p m644 "
+        },
+        "v2.2": {
+            "id": "0x1e96",
+            "usePort": true,
+            "command": "-c arduino -p m644p -b 115200 "
+        },
+        "v2.3": {
+            "id": "0x1e97",
+            "usePort": true,
+            "command": "-c arduino -p m1284p -b 115200 "
+        }
+    },
+    "githubConfigDownload": "https://raw.githubusercontent.com/salbahra/OpenSprinkler-Updater/master/",
+    "githubAPI": "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Compiled-Firmware/contents/",
+    "githubFirmwareDownload": "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Compiled-Firmware/master/",
+    "githubRelease": "https://api.github.com/repos/OpenSprinkler/OpenSprinkler-Firmware/releases"
+}

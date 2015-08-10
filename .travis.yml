@@ -1,0 +1,11 @@
+bundler_args: --retry 3
+language: objective-c
+before_install:
+ - export TZ=America/Chicago
+ - npm install -g grunt-cli
+install: npm install
+before_script:
+ - grunt
+ - node build.js
+notifications:
+  on_failure: change

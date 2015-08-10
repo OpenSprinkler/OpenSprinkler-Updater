@@ -1,0 +1,69 @@
+<ion-view view-title="OpenSprinkler Updater">
+    <ion-nav-title>
+        <img src="img/logo.svg">
+    </ion-nav-title>
+    <ion-content class="padding">
+        <div class="list card left" ng-hide="!driver">
+            <div class="item item-divider">OpenSprinkler Drivers</div>
+            <div class="item item-body item-button-right">
+                <p class="with-button">OpenSprinkler {{driver}} has been detected on your system however the required drivers may not be installed.</p>
+                <button ng-click="downloadDriver()" class="button button-stable">
+                    Download
+                </button>
+            </div>
+        </div>
+
+        <div class="list card">
+
+            <div class="item item-divider">Connected Devices</div>
+            <div class="item item-body">
+
+                <div class="center">
+
+                    <ion-spinner ng-class="{ hidden: button.disabled === 0 || deviceList.length }"></ion-spinner>
+
+                    <div ng-repeat="device in deviceList">
+
+                        <div class="list left">
+                            <div class="item item-button-right">
+                                OpenSprinkler {{device.type}}
+                                <button ng-click="updateAction(device.type,device.port)" class="button button-stable" ng-disabled="button.disabled">
+                                    Update Firmware
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div ng-hide="deviceList.length || button.disabled">No devices found</div>
+
+                </div>
+
+                <button ng-click="checkDevices()" class="button button-block button-dark" ng-disabled="button.disabled">
+                    {{button.text}}
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="list left" ng-hide="!latestRelease">
+            <div class="item item-button-right">
+                Latest firmware is {{latestRelease.name}} ({{latestRelease.releaseDate}})
+                <button ng-click="showChangelog()" class="button button-stable">
+                    Changelog
+                </button>
+            </div>
+        </div>
+
+        <div class="list card" ng-hide="!updateLog">
+            <div class="item item-divider">Update Log Output</div>
+            <div class="item item-body" ng-bind-html="updateLog">
+            </div>
+        </div>
+
+		<div class="center">
+			Version 1.0.0
+		</div>
+    </ion-content>
+</ion-view>

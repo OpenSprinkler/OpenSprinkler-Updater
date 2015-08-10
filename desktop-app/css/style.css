@@ -1,0 +1,36 @@
+/* App specific rules */
+.header {
+	background-color: #1d1d1d;
+}
+
+/* Basic app styles */
+.center {
+	text-align: center
+}
+.left {
+	text-align: left
+}
+.hidden {
+	display: none;
+}
+.wide > .popup {
+	width: 60%;
+}
+.with-button {
+	margin: 0 !important;
+	width: 70%;
+}
+
+/* Changelog styles */
+.bullet-list {
+	list-style: initial;
+	padding-left: 20px;
+}
+.bullet-list > li {
+	padding: 3px;
+}
+.bullet-list > p {
+	font-size: large;
+	margin-left: -15px;
+	padding: 5px;
+}
