@@ -52,7 +52,12 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			command = commandPrefix[platform] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command;
 
 		// Execute the AVRDUDE command and parse the reply
-		exec( command, { timeout: 3000 }, function( error, stdout, stderr ) {
+		exec( command, { timeout: 3000 }, function( err, stdout, stderr ) {
+			if ( err ) {
+				callback();
+				return;
+			}
+
 			stdout = stdout || stderr;
 
 			var matches = stdout.match( filter ),
@@ -122,7 +127,11 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 				// The first command will list all Call-Up serial ports
 				ports: function( callback ) {
-					exec( "ls /dev/cu.*", { timeout: 1000 }, function( error, stdout ) {
+					exec( "ls /dev/cu.*", { timeout: 1000 }, function( err, stdout ) {
+						if ( err ) {
+							callback( err );
+							return;
+						}
 
 						// Return the list delimited by line return
 						callback( null, stdout.split( "\n" ) );
@@ -131,21 +140,34 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 				// The second command requests the USB informatin from system_profiler (command in bash script)
 				devices: function( callback ) {
-					exec( "avr/serial.osx.sh", { timeout: 1000 }, function( error, stdout ) {
+					exec( "avr/serial.osx.sh", { timeout: 1000 }, function( err, stdout ) {
+						if ( err ) {
+							callback( err );
+							return;
+						}
 
 						// Return the list delimited by line return
 						callback( null, stdout.split( "\n" ) );
 					} );
 				}
 			}, function( err, data ) {
+				if ( err ) {
+					cleanUp();
+					return;
+				}
+
 				parseDevices( data.devices, data.ports );
 			} );
 		} else if ( platform === "linux" ) {
 
 			// Handle serial port scan for Linux platform by running shell script
 			// which parses the /sys/bus/usb/devices path for connected devices
-			exec( "./avr/serial.linux.sh", { timeout: 1000 }, function( error, stdout ) {
-				parseDevices( stdout.split( "\n" ), null );
+			exec( "./avr/serial.linux.sh", { timeout: 1000 }, function( err, stdout ) {
+				if ( err ) {
+					cleanUp();
+				} else {
+					parseDevices( stdout.split( "\n" ), null );
+				}
 			} );
 		} else if ( platform === "win" ) {
 			var wmic = spawn( "wmic", [] ),
@@ -202,7 +224,12 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 						$scope.$apply();
 
 						// Execute the AVRDUDE update process and process the result
-						exec( command, function( error, stdout, stderr ) {
+						exec( command, function( err, stdout, stderr ) {
+							if ( err ) {
+								callback( err );
+								return;
+							}
+
 							stdout = stdout || stderr;
 
 							// At the end of the AVRDUDE command, the flash memory is verified and if successful a message indicating so is displayed
@@ -224,7 +251,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				}, function( err, results ) {
 
 					// Process results once the download and update process has completed. If the status was successful indicate so to the user.
-					if ( results.status ) {
+					if ( !err && results.status ) {
 						$scope.button.text = "OpenSprinkler " + type + " is rebooting...";
 						$scope.$apply();
 
