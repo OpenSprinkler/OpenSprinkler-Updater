@@ -93,6 +93,15 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	};
 
 	$scope.startApp = function() {
+		var dir = process.cwd().split( "/" );
+
+		// Check if the application is running from the packaged DMG
+		if ( platform === "osx" && dir[ 1 ] === "Volumes" && dir[ 2 ] === "OpenSprinkler Updater" ) {
+			$ionicPopup.alert( {
+				title: "Not Installed",
+				template: "<p class='center'>The application cannot be run from inside the distributed DMG. Please re-run the application after copying to the Applications folder.</p>"
+			} );
+		}
 
 		// Update the configuration from Github to check for new firmware versions
 		updateConfiguration( function() {
