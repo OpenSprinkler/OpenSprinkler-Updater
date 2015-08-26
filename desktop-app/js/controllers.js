@@ -43,13 +43,13 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 	// Define the actual scan subroutine which run for each possibly detected device
 	var scanQueue = async.queue( function( task, callback ) {
 
-		var device = deviceList[task.type],
+		var device = deviceList[ task.type ],
 
 			// Assign the signature filter to be used for scanning purposes
 			filter = task.filter || new RegExp( device.id, "g" ),
 
 			// Generate command to probe for device version
-			command = commandPrefix[platform] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command;
+			command = commandPrefix[ platform ] + ( device.usePort && task.port ? "-P " + task.port + " " : "" ) + device.command;
 
 		// Execute the AVRDUDE command and parse the reply
 		exec( command, { timeout: 3000 }, function( err, stdout, stderr ) {
@@ -65,7 +65,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 			// Check the device signature against the associated ID
 			if ( stdout.indexOf( "Device signature = " ) !== -1 && matches ) {
-				matchFound = matches[0];
+				matchFound = matches[ 0 ];
 			} else if ( stdout.indexOf( "Operation not permitted" ) !== -1 && platform === "linux" ) {
 				$ionicPopup.alert( {
 					title: "OpenSprinkler Updater Permissions",
@@ -215,9 +215,9 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 						}
 
 						// Define the command to be used for updating
-						var command = commandPrefix[platform] +
-								( deviceList[type].usePort && port ? "-P " + port + " " : "" ) +
-								deviceList[type].command + " -q -F -U flash:w:" + "firmwares/" + type + "/" + file;
+						var command = commandPrefix[ platform ] +
+								( deviceList[ type ].usePort && port ? "-P " + port + " " : "" ) +
+								deviceList[ type ].command + " -q -F -U flash:w:" + "firmwares/" + type + "/" + file;
 
 						// Update buttons to indicate download complete and the updating has starting
 						$scope.button.text = "Flashing firmware " + version + " on OpenSprinkler " + type + "...";
@@ -315,8 +315,8 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 			for ( version in versions ) {
 				if ( versions.hasOwnProperty( version ) ) {
-					html += "<option " + ( versions[version].isLatest ? "selected='selected' " : "" ) +
-						"value='" + versions[version].version + "'>" + versions[version].version + ( versions[version].isLatest ? " (Latest)" : "" ) + "</option>";
+					html += "<option " + ( versions[ version ].isLatest ? "selected='selected' " : "" ) +
+						"value='" + versions[ version ].version + "'>" + versions[ version ].version + ( versions[ version ].isLatest ? " (Latest)" : "" ) + "</option>";
 				}
 			}
 
@@ -352,21 +352,21 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		$scope.latestRelease = {};
 
 		// Update the release date time to a readable string
-		$scope.latestRelease.releaseDate = toUSDate( new Date( releases[0].created_at ) );
+		$scope.latestRelease.releaseDate = toUSDate( new Date( releases[ 0 ].created_at ) );
 
 		// Set the version number to the latest release
-		$scope.latestRelease.name = releases[0].name;
+		$scope.latestRelease.name = releases[ 0 ].name;
 
 		// Update body text
-		var changeLog = releases[0].body.split( "\r\n" );
+		var changeLog = releases[ 0 ].body.split( "\r\n" );
 
 		for ( line in changeLog ) {
 			if ( changeLog.hasOwnProperty( line ) ) {
 
 				// Parse each line to convert the Markdown to HTML. If the item is a list item that starts with -, * or + then convert to a list item
 				// Otherwise, assume it is a header for the proceeding list and wrap it as such
-				changeLog[line] = changeLog[line].replace( /^[\-|\*|\+]\s(.*)$/, "<li>$1</li>" );
-				changeLog[line] = changeLog[line].replace( /^(?!<li>.*<\/li>$)(.*)$/, "<p>$1</p>" );
+				changeLog[ line ] = changeLog[ line ].replace( /^[\-|\*|\+]\s(.*)$/, "<li>$1</li>" );
+				changeLog[ line ] = changeLog[ line ].replace( /^(?!<li>.*<\/li>$)(.*)$/, "<p>$1</p>" );
 			}
 		}
 
@@ -407,12 +407,12 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 				for ( file in files.data ) {
 					if ( files.data.hasOwnProperty( file ) ) {
-						name = files.data[file].name.match( releaseNameFilter );
+						name = files.data[ file ].name.match( releaseNameFilter );
 
-						if ( name && files.data[file].type === "file" ) {
+						if ( name && files.data[ file ].type === "file" ) {
 							fileList.push( {
-								version: name[0],
-								isLatest: name[0] === $scope.latestRelease.name
+								version: name[ 0 ],
+								isLatest: name[ 0 ] === $scope.latestRelease.name
 							} );
 						}
 					}
@@ -472,7 +472,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		for ( device in devices ) {
 			if ( devices.hasOwnProperty( device ) ) {
 
-				item = parseDevice( devices[device], ports );
+				item = parseDevice( devices[ device ], ports );
 
 				// Match OpenSprinkler v2.0 PID and VID and flag it for missing driver if no response from AVRDUDE
 				if ( item.vid === "1781" && item.pid === "0c9f" ) {
@@ -491,7 +491,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 				// Detected hardware v2.2 or v2.3 and correlate the port value to the location
 				if ( item.vid === "1a86" && item.pid === "7523" ) {
-					if ( platform === "win" && !item.port ) {
+					if ( ( platform === "win" || platform === "osx" ) && !item.port ) {
 						$scope.driver = "v2.2+";
 						continue;
 					}
@@ -520,18 +520,18 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			item = item.split( ":" );
 
 			// If a valid VID is present then process it
-			if ( item[0] ) {
-				vid = item[0].match( deviceIDFilter )[1].toLowerCase();
+			if ( item[ 0 ] ) {
+				vid = item[ 0 ].match( deviceIDFilter )[ 1 ].toLowerCase();
 			}
 
 			// If a valid PID is present then process it
-			if ( item[1] ) {
-				pid = item[1].match( deviceIDFilter )[1].toLowerCase();
+			if ( item[ 1 ] ) {
+				pid = item[ 1 ].match( deviceIDFilter )[ 1 ].toLowerCase();
 			}
 
 			// If a location is provided then try to match it to the corresponding device
-			if ( item[2] ) {
-				port = item[2].split( "/" )[0].trim().replace( deviceIDFilter, "$1" ).substr( 0, 4 );
+			if ( item[ 2 ] ) {
+				port = item[ 2 ].split( "/" )[ 0 ].trim().replace( deviceIDFilter, "$1" ).substr( 0, 4 );
 				port = findPort( ports, port );
 			}
 
@@ -541,15 +541,15 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			// which is in the following format: Location::VID::PID
 			item = item.split( "::" );
 
-			if ( item[2] ) {
-				pid = item[2].toLowerCase();
+			if ( item[ 2 ] ) {
+				pid = item[ 2 ].toLowerCase();
 			}
 
-			if ( item[1] ) {
-				vid = item[1].toLowerCase();
+			if ( item[ 1 ] ) {
+				vid = item[ 1 ].toLowerCase();
 			}
 
-			port = item[0];
+			port = item[ 0 ];
 
 		} else if ( platform === "win" ) {
 
@@ -558,25 +558,25 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			item = item.split( "," );
 
 			// Check if a device PID/VID string is provided
-			if ( item[2] ) {
+			if ( item[ 2 ] ) {
 
 				// Process PID from device ID string
-				pid = item[2].match( /pid_([\d\w]+)/i );
+				pid = item[ 2 ].match( /pid_([\d\w]+)/i );
 				if ( pid ) {
-					pid = pid[1].toLowerCase();
+					pid = pid[ 1 ].toLowerCase();
 				}
 
 				// Process VID from device ID string
-				vid = item[2].match( /vid_([\d\w]+)/i );
+				vid = item[ 2 ].match( /vid_([\d\w]+)/i );
 				if ( vid ) {
-					vid = vid[1].toLowerCase();
+					vid = vid[ 1 ].toLowerCase();
 				}
 			}
 
-			if ( item[1] ) {
-				port = item[1].match( /COM(\d+)/i );
+			if ( item[ 1 ] ) {
+				port = item[ 1 ].match( /COM(\d+)/i );
 				if ( port ) {
-					port = port[0];
+					port = port[ 0 ];
 				}
 			}
 		}
@@ -615,8 +615,8 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 			device;
 
 		for ( device in deviceList ) {
-			if ( deviceList.hasOwnProperty( device ) && deviceList[device].usePort === true ) {
-				regex.push( deviceList[device].id );
+			if ( deviceList.hasOwnProperty( device ) && deviceList[ device ].usePort === true ) {
+				regex.push( deviceList[ device ].id );
 			}
 		}
 
@@ -627,7 +627,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 		var device;
 		for ( device in deviceList ) {
 			/*jshint -W018 */
-			if ( deviceList.hasOwnProperty( device ) && deviceList[device].id === result && !!deviceList[device].usePort === usePort ) {
+			if ( deviceList.hasOwnProperty( device ) && deviceList[ device ].id === result && !!deviceList[ device ].usePort === usePort ) {
 				return device;
 			}
 			/*jshint +W018 */
@@ -682,8 +682,8 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 		for ( port in ports ) {
 			if ( ports.hasOwnProperty( port ) ) {
-				if ( ports[port].indexOf( location ) !== -1 ) {
-					return ports[port];
+				if ( ports[ port ].indexOf( location ) !== -1 ) {
+					return ports[ port ];
 				}
 			}
 		}
@@ -718,7 +718,7 @@ function replaceVariables( object ) {
 
 	for ( item in object ) {
 		if ( object.hasOwnProperty( item ) ) {
-			object[item] = path.normalize( object[item].replace( /%%cwd%%/g, dir ).replace( /%%arch%%/g, arch ) );
+			object[ item ] = path.normalize( object[ item ].replace( /%%cwd%%/g, dir ).replace( /%%arch%%/g, arch ) );
 		}
 	}
 
