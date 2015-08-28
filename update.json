@@ -1,0 +1,29 @@
+{
+	"windows": {
+		"version": "1.0.0",
+		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.0/OpenSprinkler-Updater.nw",
+		"title": "1.0.0 Release",
+		"description": "Attention, please read changelog.",
+		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.0",
+		"gitTag": "1.0.0",
+		"gitCommit": "8c58e84"
+	},
+	"mac": {
+		"version": "1.0.0",
+		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.0/OpenSprinkler-Updater.nw",
+		"title": "1.0.0 Release",
+		"description": "Attention, please read changelog.",
+		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.0",
+		"gitTag": "1.0.0",
+		"gitCommit": "8c58e84"
+	},
+	"linux": {
+		"version": "1.0.0",
+		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.0/OpenSprinkler-Updater.nw",
+		"title": "1.0.0 Release",
+		"description": "Attention, please read changelog.",
+		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.0",
+		"gitTag": "1.0.0",
+		"gitCommit": "8c58e84"
+	}
+}

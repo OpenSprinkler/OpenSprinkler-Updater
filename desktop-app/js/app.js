@@ -38,3 +38,27 @@ angular.module( "os-updater", [ "ionic", "os-updater.controllers" ] )
     $urlRouterProvider.otherwise( "/home" );
 
 } );
+
+// Check and update application
+var currentVersion = gui.App.manifest.version,
+	updateParams = {
+		channel: "beta",
+		currentVersion: currentVersion,
+		endpoint: "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Updater/master/update.json",
+		verify: false
+	},
+	updater = require( "nw-updater" )( updateParams );
+
+updater.update();
+
+updater.on( "download", function( version ) {
+	console.log( "Downloading new version: " + version );
+} );
+
+updater.on( "installed", function() {
+	alert( "The OpenSprinkler Updater has just been updated to the latest version, please restart the app to update." );
+} );
+
+updater.on( "error", function( err ) {
+	console.log( err );
+} );

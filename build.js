@@ -9,6 +9,7 @@ var appName = "OpenSprinkler Updater",
 	nw = new NwBuilder( {
 	  files: "desktop-app/**",
 	  platforms: [ "osx32", "win32", "linux" ],
+	  version: "0.12.3",
 	  appName: appName,
 	  appVersion: appPkg.version,
 	  winIco: "assets/win.ico",
@@ -66,14 +67,17 @@ nw.build()
     console.log( "All platforms have been built successfully!" );
     async.series( [
 		function( callback ) {
+			createNW( callback );
+		},
+		function( callback ) {
+			createDMG( callback );
+		},
+		function( callback ) {
 			console.log( "Creating package for win32..." );
 			exec( "wine 'C:\\Program Files\\Inno Setup 5\\Compil32.exe' '/cc' 'setup.iss'", function() {
 				console.log( "Package for win32 completed successfully (" + ( fs.statSync( "./build/" + appName.replace( /\s/g, "-" ) + ".exe" ).size / 1000000 ).toFixed( 2 ) + "MB)" );
 				callback();
 			} );
-		},
-		function( callback ) {
-			createDMG( callback );
 		},
 		function( callback ) {
 			packageLinux( callback );
@@ -84,12 +88,12 @@ nw.build()
     console.error( error );
   } );
 
-/* Create the regular .nw file for updates
+// Create the regular .nw file for updates
 function createNW( callback ) {
-	console.log( "Creating updater.nw for partial updates..." );
+	console.log( "Creating regular updater.nw for partial updates..." );
 
 	var archive = archiver( "zip" ),
-		output = fs.createWriteStream( "./build/" + appName + ".nw" );
+		output = fs.createWriteStream( "./build/" + appName.replace( /\s/g, "-" ) + ".nw" );
 
 	output.on( "close", function() {
 		console.log( "Partial update package completed (" + ( archive.pointer() / 1000000 ).toFixed( 2 ) + "MB)" );
@@ -105,7 +109,6 @@ function createNW( callback ) {
 	} ] );
 	archive.finalize();
 }
-*/
 
 // Create the mac DMG installer
 function createDMG( callback ) {
@@ -148,7 +151,7 @@ function packageLinux() {
 	for ( platform in platforms ) {
 		if ( platforms.hasOwnProperty( platform ) ) {
 			createPackage.push( {
-				platform: platforms[platform]
+				platform: platforms[ platform ]
 			} );
 		}
 	}
@@ -167,7 +170,7 @@ function rmDir( dirPath, removeSelf ) {
 
 	if ( files.length > 0 ) {
 		for ( var i = 0; i < files.length; i++ ) {
-			var filePath = dirPath + "/" + files[i];
+			var filePath = dirPath + "/" + files[ i ];
 			if ( fs.statSync( filePath ).isFile() ) {
 				fs.unlinkSync( filePath );
 			} else {
