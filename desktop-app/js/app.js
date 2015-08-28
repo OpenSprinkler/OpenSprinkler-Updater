@@ -5,6 +5,10 @@
 
 // Since we are using Node Webkit, require the GUI module
 var gui = require( "nw.gui" ),
+    fs = require( "fs" ),
+
+    // Import configuration located in config.json
+    config = JSON.parse( fs.readFileSync( "config.json", "utf8" ) ),
     win = gui.Window.get();
 
 // On OS X add a menu bar configuration
@@ -44,7 +48,7 @@ var currentVersion = gui.App.manifest.version,
 	updateParams = {
 		channel: "beta",
 		currentVersion: currentVersion,
-		endpoint: "https://raw.githubusercontent.com/OpenSprinkler/OpenSprinkler-Updater/master/update.json",
+		endpoint: config.githubConfigDownload + "desktop-app/update.json",
 		verify: false
 	},
 	updater = require( "nw-updater" )( updateParams );
