@@ -6,10 +6,10 @@
 
 [Setup]
 AppName = OpenSprinkler Updater
-AppVerName = OpenSprinkler Updater 1.0.0
+AppVerName = OpenSprinkler Updater 1.0.1
 AppPublisher = OpenSprinkler
 AppPublisherURL = https://opensprinkler.com
-AppVersion = 1.0.0
+AppVersion = 1.0.1
 DefaultDirName = {pf}\OpenSprinkler\OpenSprinkler Updater
 DefaultGroupName = OpenSprinkler
 Compression = lzma

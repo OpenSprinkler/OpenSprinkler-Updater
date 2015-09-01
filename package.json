@@ -1,6 +1,6 @@
 {
   "name": "OpenSprinkler-Updater",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "OpenSprinkler firmware updater",
   "main": "build.js",
   "scripts": {
