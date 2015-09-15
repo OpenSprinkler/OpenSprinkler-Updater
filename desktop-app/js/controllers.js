@@ -168,7 +168,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 				parseDevices( reply.split( "\n" ), null );
 			} );
 
-			wmic.stdin.end( "path win32_pnpentity get caption, deviceid /format:csv\n" );
+			wmic.stdin.end( "path win32_pnpentity get caption, deviceid /format:\"./avr/win/csv\"\n" );
 
 		}
 	};
