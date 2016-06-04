@@ -15,7 +15,7 @@ var appName = "OpenSprinkler Updater",
 	  winIco: "assets/win.ico",
 	  macIcns: "assets/mac.icns",
 	  buildType: "default",
-	  macZip: false,
+	  zip: false,
 	  mergeZip: false
 	} ),
 	createPackage = async.queue( function( task, callback ) {
