@@ -513,7 +513,7 @@ angular.module( "os-updater.controllers", [] ).controller( "HomeCtrl", function(
 
 			// If a location is provided then try to match it to the corresponding device
 			if ( item[ 2 ] ) {
-				port = item[ 2 ].split( "/" )[ 0 ].trim().replace( deviceIDFilter, "$1" ).substr( 0, 4 );
+				port = item[ 2 ].split( "/" )[ 0 ].trim().replace( deviceIDFilter, "$1" ).substr( 0, 3 );
 				port = findPort( ports, port );
 			}
 
