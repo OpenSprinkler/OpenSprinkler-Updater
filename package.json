@@ -18,9 +18,9 @@
   "devDependencies": {
     "appdmg": "^0.4.5",
     "archiver": "^1.0.0",
-    "async": "^1.5.2",
+    "async": "^2.1.2",
     "grunt": "^1.0.1",
     "grunt-contrib-jshint": "^1.0.0",
-    "nw-builder": "^2.2.0"
+    "nw-builder": "^3.1.2"
   }
 }
