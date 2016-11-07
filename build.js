@@ -49,6 +49,9 @@ var appName = "OpenSprinkler Updater",
 		archive.finalize();
 	} );
 
+// Clean up build directory before building
+rmDir( "./build", false );
+
 // Clean up firmware directory before building
 rmDir( "./desktop-app/firmwares", false );
 
