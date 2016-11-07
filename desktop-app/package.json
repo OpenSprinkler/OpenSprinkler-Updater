@@ -1,6 +1,6 @@
 {
   "name": "OpenSprinkler-Updater",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "index.html",
   "window": {
     "title": "OpenSprinkler Updater",

@@ -1,29 +1,29 @@
 {
 	"windows": {
-		"version": "1.0.3",
-		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.3/OpenSprinkler-Updater.nw",
-		"title": "1.0.3 Release",
+		"version": "1.0.4",
+		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.4/OpenSprinkler-Updater.nw",
+		"title": "1.0.4 Release",
 		"description": "Attention, please read changelog.",
-		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.3",
-		"gitTag": "1.0.3",
-		"gitCommit": "bb4a548"
+		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.4",
+		"gitTag": "1.0.4",
+		"gitCommit": "c287136"
 	},
 	"mac": {
-		"version": "1.0.3",
-		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.3/OpenSprinkler-Updater.nw",
-		"title": "1.0.3 Release",
+		"version": "1.0.4",
+		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.4/OpenSprinkler-Updater.nw",
+		"title": "1.0.4 Release",
 		"description": "Attention, please read changelog.",
-		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.3",
-		"gitTag": "1.0.3",
-		"gitCommit": "bb4a548"
+		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.4",
+		"gitTag": "1.0.4",
+		"gitCommit": "c287136"
 	},
 	"linux": {
-		"version": "1.0.3",
-		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.3/OpenSprinkler-Updater.nw",
-		"title": "1.0.3 Release",
+		"version": "1.0.4",
+		"updateUrl": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/download/1.0.4/OpenSprinkler-Updater.nw",
+		"title": "1.0.4 Release",
 		"description": "Attention, please read changelog.",
-		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.3",
-		"gitTag": "1.0.3",
-		"gitCommit": "bb4a548"
+		"changeLog": "https://github.com/OpenSprinkler/OpenSprinkler-Updater/releases/tag/1.0.4",
+		"gitTag": "1.0.4",
+		"gitCommit": "c287136"
 	}
 }
