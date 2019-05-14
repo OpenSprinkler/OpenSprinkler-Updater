@@ -1,4 +1,4 @@
-<img align="left" height="150" src="http://albahra.com/opensprinkler/icon-new.png"><h3>&nbsp;OpenSprinkler Updater [![GitHub version](https://badge.fury.io/gh/OpenSprinkler%2FOpenSprinkler-Updater.svg)](http://badge.fury.io/gh/OpenSprinkler%2FOpenSprinkler-Updater)</h3>
+<img align="left" height="150" src="http://albahra.com/opensprinkler/icon-new.png"><h3>&nbsp;OpenSprinkler Updater [![GitHub version](https://img.shields.io/github/package-json/v/opensprinkler/opensprinkler-updater.svg)](http://github.com/OpenSprinkler/OpenSprinkler-Updater)</h3>
 &nbsp;[![Build Status](https://api.travis-ci.org/OpenSprinkler/OpenSprinkler-Updater.svg?branch=master)](https://travis-ci.org/) [![devDependency Status](https://david-dm.org/OpenSprinkler/OpenSprinkler-Updater/dev-status.svg)](https://david-dm.org/OpenSprinkler/OpenSprinkler-Updater#info=devDependencies)  
 &nbsp;[Official Site][official] | [Support][help] | [Changelog][changelog]  
 <br>
